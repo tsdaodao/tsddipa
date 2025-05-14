@@ -83,7 +83,7 @@
 
             // 生成二维码 (指向安装链接)
             new QRCode(document.getElementById("qrcode"), {
-                text: installUrl,
+                text: window.location.href,
                 width: 200,
                 height: 200
             });
