@@ -12,12 +12,19 @@
     </style>
 </head>
 <body>
+
+   当前 URL: <label  id = "cur"></label>
+
+    
     <h1>当前版本: <span id="currentVersion">加载中...</span></h1>
     <div id="qrcode" class="qrcode"></div>
+ 
+    <br>
+    
     <a id="installLink" href="#">安装最新版</a>
 
     <label for="customUrl">自定义下载 URL:</label>
-    <textarea id="customUrl" name="customUrl" cols="30" rows="3">itms-services://?action=download-manifest&url=https://tsdaodao.github.io/tsddipa/app.plist</textarea>
+    <textarea id="customUrl" name="customUrl" cols="30" rows="3">itms-services://?action=download-manifest&url=https://tsdaodao.github.io/tsddipa/appdesktop.plist</textarea>
 
    <button onclick="buttonclick()">buttonclick</button>
    
@@ -49,7 +56,7 @@
 
     <script>
 
-        
+         document.getElementById('cur').innerHTML =  window.location.href;
         // 配置区 (需手动维护)
         const config = {
             baseUrl: "https://yourusername.github.io/repo-name/", // 修改为你的 Pages 地址
@@ -113,6 +120,8 @@
     </script>
 </body>
 
-        <div id="qrcode2" class="qrcode2"></div>
+        <div id="qrcode" class="qrcode"></div>
+
+    https://tsdaodao.github.io/tsddipa/
 
 </html>
