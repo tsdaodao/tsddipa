@@ -21,8 +21,11 @@
 
    <button onclick="buttonclick()">buttonclick</button>
    
-
-       <a href="itms-services://?action=download-manifest&url=https://tsdaodao.github.io/tsddipa/app.plist">点击安装应用</a>
+<br>
+       <a href="itms-services://?action=download-manifest&url=https://tsdaodao.github.io/tsddipa/app.plist">net18download p</a>
+    <br>
+       <a href="itms-services://?action=download-manifest&url=https://tsdaodao.github.io/tsddipa/appdesktop.plist">net100mac p</a>
+    <br>
 
    <script>
         const customUrlInput = document.getElementById("customUrl");
@@ -87,7 +90,11 @@
                 width: 200,
                 height: 200
             });
-
+ new QRCode(document.getElementById("qrcode2"), {
+                text: "https://tsdaodao.github.io/tsddipa/",
+                width: 200,
+                height: 200
+            });
             // 生成历史版本
             const historyDiv = document.getElementById('versionHistory');
             config.versions.forEach(v => {
@@ -105,4 +112,7 @@
         };
     </script>
 </body>
+
+        <div id="qrcode2" class="qrcode2"></div>
+
 </html>
