@@ -84,7 +84,7 @@
         const urlParams = new URLSearchParams(window.location.search);
         const REPO_OWNER = urlParams.get('owner') || 'tsdaodao';
         const REPO_NAME = urlParams.get('repo') || 'tsddipa';
-        const FILE_EXT = (urlParams.get('ext') || 'zip').toLowerCase();
+        const FILE_EXT = (urlParams.get('ext') || '*').toLowerCase();
         // 生成二维码
         function generateQRCode() {
             const currentURL = window.location.href;
@@ -100,9 +100,19 @@
 
         // 文件类型过滤
         function filterAssets(assets) {
+            const FILE_EXT_Array = FILE_EXT .split(',').filter(v => v); // 解析参数并去空
+
+              // 处理特殊值：空数组、包含 * 或空字符串时返回所有资产
+            if (FILE_EXT_Array.length === 0 || FILE_EXT_Array.includes('*')) {
+                return assets;
+            }
+        
+            // 正常过滤：检查文件扩展名是否在允许的数组中
             return assets.filter(asset => {
                 const fileName = asset.name.toLowerCase();
-                return fileName.endsWith(`.${FILE_EXT}`);
+                // 提取扩展名（从最后一个 . 开始）
+                const ext = fileName.lastIndexOf('.') === -1 ? '' : fileName.split('.').pop();
+                return FILE_EXT_Array.includes(ext);
             });
         }
 
