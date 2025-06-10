@@ -120,6 +120,36 @@
             });
         }
 
+        function checkurlshowbutton(name ){
+            const lowerName = name.toLowerCase();
+            if (lowerName.includes('test') || lowerName.includes('dev')) {
+                return lowerName.includes('.ipa') ? 'test' : '';
+            }
+            return lowerName.includes('.ipa') ? 'prod' : '';
+        }
+
+        
+        function checkurlshowbuttonhtml(name ){
+            const lowerName = name.toLowerCase();
+
+             var testhtml = ` <a href="itms-services://?action=download-manifest&url=${encodeURIComponent('https://https://tsdaodao.github.io/tsddipa/tsdd/apptest.plist')}" class="btn btn-secondary" data-mode="dev all">
+                                <i class="fa fa-flask"></i>
+                                <span>测试版安装</span>
+                                </a>`
+
+                    var prodhtml = ` <a href="itms-services://?action=download-manifest&url=${encodeURIComponent('https://https://tsdaodao.github.io/tsddipa/tsdd/app.plist')}" class="btn btn-secondary" data-mode="dev all">
+                                <i class="fa fa-flask"></i>
+                    <span>测试版安装</span>
+                    </a>`
+            if (lowerName.includes('test') || lowerName.includes('dev')) {
+                return lowerName.includes('.ipa') ? testhtml : '';
+            }else if (lowerName.includes('prod') || lowerName.includes('ao.ipa')) {
+
+
+            }
+            return lowerName.includes('.ipa') ? prodhtml : prodhtml;
+
+        }
         async function fetchReleases() {
             const container = document.getElementById('release-container');
             
@@ -159,6 +189,10 @@
                     const filteredAssets = filterAssets(release.assets);
                     if(filteredAssets.length === 0) return;
 
+                  
+
+
+
                     html += `
                         <div class="release-card">
                             <h2>${release.name || '未命名版本'}</h2>
@@ -177,6 +211,9 @@
                                             ${asset.name} 
                                             <span class="file-size">(${formatBytes(asset.size)})</span>
                                         </a>
+
+ 
+                                       ${ checkurlshowbuttonhtml(asset.name)}
                                     </li>
                                 `).join('')}
                             </ul>
@@ -213,4 +250,55 @@
         });
     </script>
 </body>
+
+ <!-- 自定义样式 -->
+ <style>
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 24px;
+      margin: 8px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      border: none;
+      min-width: 180px;
+    }
+    
+    .btn-primary {
+      background-color: #2563eb;
+      color: white;
+      box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.4);
+    }
+    
+    .btn-secondary {
+      background-color: #f97316;
+      color: white;
+      box-shadow: 0 4px 6px -1px rgba(249, 115, 22, 0.4);
+    }
+    
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .btn:active {
+      transform: translateY(0);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    
+    .btn i {
+      margin-right: 8px;
+    }
+    
+    .download-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 24px;
+    }
+  </style>
 </html>
