@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title> Releases </title>
+    <!-- 引入 QRCode.js -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #0366d6;
+            --border-color: #e1e4e8;
+            --bg-color: #f6f8fa;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            max-width: 1000px;
+            margin: 1rem auto;
+            padding: 0 1rem;
+        }
+
+        #qrcode-container {
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        #qrcode {
+            display: inline-block;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+        }
+
+        .config-panel {
+            background: var(--bg-color);
+            padding: 1rem;
+            border-radius: 6px;
+            margin: 1rem 0;
+        }
+
+        .release-card {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .filter-info {
+            color: #586069;
+            margin: 0.5rem 0;
+            font-size: 0.9em;
+        }
+
+        /* 保持原有样式，新增以下内容 */
+        .param-input {
+            padding: 0.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            margin-right: 0.5rem;
+        }
+
+        .error-box {
+            color: #dc3545;
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>GitHub Releases 浏览器</h1>
+    <div id="qrcode-container"></div>
+    <div id="release-container"></div>
+
+    <script>
+
+        // https://tsdaodao2.github.io/testreleases/index6.html?owner=tsdaodao2&repo=testreleases&ext=html
+
+        // 从 URL 参数获取配置
+        const urlParams = new URLSearchParams(window.location.search);
+        const REPO_OWNER = urlParams.get('owner') || 'xxxx';
+        const REPO_NAME = urlParams.get('repo') || 'yyyy';
+        const FILE_EXT = (urlParams.get('ext') || 'zip').toLowerCase();
+        // 生成二维码
+        function generateQRCode() {
+            const currentURL = window.location.href;
+            new QRCode(document.getElementById("qrcode-container"), {
+                text: currentURL,
+                width: 150,
+                height: 150,
+                colorDark : "#000000",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.H
+            });
+        }
+
+        // 文件类型过滤
+        function filterAssets(assets) {
+            return assets.filter(asset => {
+                const fileName = asset.name.toLowerCase();
+                return fileName.endsWith(`.${FILE_EXT}`);
+            });
+        }
+
+        async function fetchReleases() {
+            const container = document.getElementById('release-container');
+            
+            try {
+                // 参数验证
+                if(!REPO_OWNER || !REPO_NAME) {
+                    throw new Error('缺少必要参数：owner 和 repo');
+                }
+
+                container.innerHTML = '<div class="loading">加载中...</div>';
+                
+                const API_URL = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases`;
+                const response = await fetch(API_URL);
+                
+                if (response.status === 404) {
+                    throw new Error('仓库不存在或无权访问');
+                }
+
+                const releases = await response.json();
+                
+                if (!Array.isArray(releases) || releases.length === 0) {
+                    container.innerHTML = '<div class="error">该仓库暂无 Release</div>';
+                    return;
+                }
+
+                // 构造显示内容
+                let html = `
+                    <div class="config-panel">
+                        当前：<strong>${REPO_OWNER}/${REPO_NAME}</strong>
+                        <span hidden class="filter-info">（只显示 .${FILE_EXT} 文件）</span>
+                    </div>
+                `;
+
+                releases.sort((a, b) => new Date(b.published_at) - new Date(a.published_at));
+
+                releases.forEach(release => {
+                    const filteredAssets = filterAssets(release.assets);
+                    if(filteredAssets.length === 0) return;
+
+                    html += `
+                        <div class="release-card">
+                            <h2>${release.name || '未命名版本'}</h2>
+                            <div class="release-meta">
+                                <span hidden >版本号：${release.tag_name}</span>
+                                <span>发布日期：${new Date(release.published_at).toLocaleDateString()}</span>
+                                         <span> ${new Date(release.published_at).toLocaleTimeString()}</span>
+                                
+                            </div>
+                            <ul class="assets-list">
+                                ${filteredAssets.map(asset => `
+                                    <li>
+                                        <a href="${asset.browser_download_url}" 
+                                           download="${asset.name}"
+                                           class="asset-link">
+                                            ${asset.name} 
+                                            <span class="file-size">(${formatBytes(asset.size)})</span>
+                                        </a>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        </div>
+                    `;
+                });
+
+                container.innerHTML = html || '<div class="error">没有匹配的文件</div>';
+                
+            } catch (error) {
+                container.innerHTML = `
+                    <div class="error-box">
+                        <strong>错误：</strong>${error.message}<br>
+                        正确 URL 格式应为：
+                        <code>?owner=用户名&repo=仓库名&ext=文件后缀</code>
+                    </div>
+                `;
+            }
+        }
+
+        // 字节转换函数保持不变
+              function formatBytes(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // 初始化
+        window.addEventListener('DOMContentLoaded', () => {
+            generateQRCode();
+            fetchReleases();
+        });
+    </script>
+</body>
+</html>
