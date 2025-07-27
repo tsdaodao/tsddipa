@@ -139,7 +139,7 @@
             // 构造plist文件名（与ipa文件同名，扩展名改为plist）
             const plistName = baseName + '.plist';
             // 构造plist文件URL（与ipa文件同路径）
-            const plistUrl = `https://${REPO_OWNER}.github.io/${REPO_NAME}/${plistName}`;
+            const plistUrl = `https://${REPO_OWNER}.github.io/${REPO_NAME}/tsdd/${plistName}`;
             
             return `
                 <a href="itms-services://?action=download-manifest&url=${encodeURIComponent(plistUrl)}" 
