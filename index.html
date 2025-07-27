@@ -2,11 +2,9 @@
 <html lang="zh-CN">
 
 <head>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Releases | 版本发布</title>
-
     <!-- 禁止缓存的meta标签 -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
@@ -33,9 +31,7 @@
         }
 
         .loading {
-
             font-size: 2.9em;
-
         }
 
         #qrcode {
@@ -92,7 +88,6 @@
     <div id="release-container"></div>
 
     <script>
-
         // https://tsdaodao2.github.io/testreleases/index6.html?owner=tsdaodao2&repo=testreleases&ext=html
 
         // 从 URL 参数获取配置
@@ -100,6 +95,7 @@
         const REPO_OWNER = urlParams.get('owner') || 'tsdaodao';
         const REPO_NAME = urlParams.get('repo') || 'tsddipa';
         const FILE_EXT = (urlParams.get('ext') || '*').toLowerCase();
+        
         // 生成二维码
         function generateQRCode() {
             const currentURL = window.location.href;
@@ -131,48 +127,31 @@
             });
         }
 
-        function checkurlshowbutton(name) {
-            const lowerName = name.toLowerCase();
-            if (lowerName.includes('test') || lowerName.includes('dev')) {
-                return lowerName.includes('.ipa') ? 'test' : '';
-            }
-            return lowerName.includes('.ipa') ? 'prod' : '';
-        }
-
-
         function checkurlshowbuttonhtml(name) {
             const lowerName = name.toLowerCase();
-
-            var testhtml = ` <a href="itms-services://?action=download-manifest&url=${encodeURIComponent('https://tsdaodao.github.io/tsddipa/tsdd/apptest.plist')}" 
-                         class="btn btn-secondary" data-mode="dev all">
-                                <i class="fa fa-flask"></i>
-                                <span>测试版安装</span>
-                                </a>`
-
-            var prodhtml = ` <a href="itms-services://?action=download-manifest&url=${encodeURIComponent('https://tsdaodao.github.io/tsddipa/tsdd/app.plist')}"
-                             class="btn btn-primary" data-mode="dev all">
-                                <i class="fa fa-flask"></i>
-                    <span>正式版安装</span>
-                    </a>`
-
-             var normalhtml = ` <a href="itms-services://?action=download-manifest&url=${encodeURIComponent('https://tsdaodao.github.io/tsddipa/tsdd/appstore.plist')}"
-                             class="btn btn-primary" data-mode="dev all">
-                                <i class="fa fa-flask"></i>
-                    <span>其他安装</span>
-                    </a>`
-            if (lowerName.includes('test') || lowerName.includes('dev')) {
-                return lowerName.includes('.ipa') ? testhtml : '';
-            } else if (lowerName.includes('prod') || lowerName.includes('ao.ipa')) {
-                     return lowerName.includes('.ipa') ? prodhtml : prodhtml;
-                        
+            
+            if (!lowerName.includes('.ipa')) {
+                return '';
             }
-            else if (lowerName.includes('store') ||lowerName.includes('Store') ) {
-                     return lowerName.includes('.ipa') ? normalhtml : "";
-                        
-            }
-                return lowerName.includes('.ipa') ? normalhtml : "";
-
+            
+            // 提取文件名（不含扩展名）
+            const baseName = name.substring(0, name.lastIndexOf('.'));
+            // 构造plist文件名（与ipa文件同名，扩展名改为plist）
+            const plistName = baseName + '.plist';
+            // 构造plist文件URL（与ipa文件同路径）
+            const plistUrl = `https://${REPO_OWNER}.github.io/${REPO_NAME}/${plistName}`;
+            
+            return `
+                <a href="itms-services://?action=download-manifest&url=${encodeURIComponent(plistUrl)}" 
+                   class="btn btn-primary" data-mode="all">
+                    <i class="fa fa-flask"></i>
+                    <span>安装 ${baseName}  </span>
+ <span hidden>  ${plistUrl}  </span>
+                    
+                </a>
+            `;
         }
+
         async function fetchReleases() {
             const container = document.getElementById('release-container');
 
@@ -212,32 +191,24 @@
                     const filteredAssets = filterAssets(release.assets);
                     if (filteredAssets.length === 0) return;
 
-
-
-
-
                     html += `
                         <div class="release-card">
                             <h2>${release.name || '未命名版本'}</h2>
                             <div class="release-meta">
                                 <span hidden >版本号：${release.tag_name}</span>
                                 <span>发布日期：${new Date(release.published_at).toLocaleDateString()}</span>
-                                         <span> ${new Date(release.published_at).toLocaleTimeString()}</span>
-                                
+                                <span> ${new Date(release.published_at).toLocaleTimeString()}</span>
                             </div>
                             <ul class="assets-list">
                                 ${filteredAssets.map(asset => `
                                     <li>
-                                                                               ${checkurlshowbuttonhtml(asset.name)}
-
+                                        ${checkurlshowbuttonhtml(asset.name)}
                                         <a href="${asset.browser_download_url}" 
                                            download="${asset.name}"
                                            class="asset-link">
                                             ${asset.name} 
                                             <span class="file-size">(${formatBytes(asset.size)})</span>
                                         </a>
-
- 
                                     </li>
                                 `).join('')}
                             </ul>
