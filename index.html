@@ -127,7 +127,7 @@
             });
         }
 
-        function checkurlshowbuttonhtml(name) {
+        function checkurlshowbuttonhtml(name, releaseAssets, currentAsset) {
             const lowerName = name.toLowerCase();
             
             if (!lowerName.includes('.ipa')) {
@@ -138,16 +138,33 @@
             const baseName = name.substring(0, name.lastIndexOf('.'));
             // 构造plist文件名（与ipa文件同名，扩展名改为plist）
             const plistName = baseName + '.plist';
-            // 构造plist文件URL（与ipa文件同路径）
-            const plistUrl = `https://${REPO_OWNER}.github.io/${REPO_NAME}/tsdd/${plistName}`;
+            
+            // 在同一个release的assets中查找对应的plist文件
+            const plistAsset = releaseAssets.find(asset => 
+                asset.name.toLowerCase() === plistName.toLowerCase()
+            );
+            
+            if (!plistAsset) {
+                // 如果找不到对应的plist文件，返回下载链接
+                return `
+                    <a href="${currentAsset.browser_download_url}" 
+                       download="${name}"
+                       class="btn btn-secondary">
+                        <i class="fa fa-download"></i>
+                        <span>下载 ${baseName}</span>
+                    </a>
+                `;
+            }
+            
+            // 构造plist文件URL（使用GitHub releases的下载链接）
+            const plistUrl = plistAsset.browser_download_url;
             
             return `
                 <a href="itms-services://?action=download-manifest&url=${encodeURIComponent(plistUrl)}" 
                    class="btn btn-primary" data-mode="all">
                     <i class="fa fa-flask"></i>
-                    <span>安装 ${baseName}  </span>
- <span hidden>  ${plistUrl}  </span>
-                    
+                    <span>安装 ${baseName}</span>
+                    <span hidden>${plistUrl}</span>
                 </a>
             `;
         }
@@ -202,7 +219,7 @@
                             <ul class="assets-list">
                                 ${filteredAssets.map(asset => `
                                     <li>
-                                        ${checkurlshowbuttonhtml(asset.name)}
+                                        ${checkurlshowbuttonhtml(asset.name, release.assets, asset)}
                                         <a href="${asset.browser_download_url}" 
                                            download="${asset.name}"
                                            class="asset-link">
