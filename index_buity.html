@@ -82,14 +82,14 @@
         }
         
         .release-description {
-            /* background: #f8f9fa; */
+            background: #f8f9fa;
             border-left: 4px solid var(--primary-color);
-             padding: 1rem;
-           /* margin: 1rem 0;
+            padding: 1rem;
+            margin: 1rem 0;
             border-radius: 0 4px 4px 0;
             white-space: pre-wrap;
             font-size: 0.9em;
-            color: #586069; */
+            color: #586069;
         }
         
         .assets-container {
@@ -128,10 +128,16 @@
             text-align: right;
         }
         
-        .asset-name {
+        .asset-link {
+            display: block;
             font-weight: 500;
-            color: #1f2937;
+            color: var(--primary-color);
+            text-decoration: none;
             margin-bottom: 0.25rem;
+        }
+        
+        .asset-link:hover {
+            text-decoration: underline;
         }
         
         .asset-size {
@@ -146,131 +152,12 @@
             flex-shrink: 0;
         }
         
-        .download-link {
-            display: inline-flex;
-            align-items: center;
-            padding: 6px 12px;
-            background: #f3f4f6;
-            color: #374151;
-            text-decoration: none;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            transition: all 0.2s ease;
-            white-space: nowrap;
-        }
-        
-        .download-link:hover {
-            background: #e5e7eb;
-            color: #1f2937;
-        }
-        
-        .download-link i {
-            margin-right: 4px;
-        }
-        
-        /* 新增样式 */
-        .install-section, .files-section {
-            margin-top: 1.5rem;
-        }
-        
-        .install-section h3, .files-section h3 {
-            color: #1f2937;
-            font-size: 1.1rem;
-            margin-bottom: 1rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid var(--border-color);
-        }
-        
-        .install-section h3 {
-            color: #2563eb;
-            border-bottom-color: #2563eb;
-        }
-        
-        .files-section h3 {
-            color: #6b7280;
-            font-size: 0.9rem;
-            margin-bottom: 0.5rem;
-            padding-bottom: 0.25rem;
-            border-bottom: 1px solid #e5e7eb;
-        }
-        
-        .install-buttons {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1.5rem;
-            justify-content: center;
-            align-items: center;
-            padding: 2rem;
-            padding-top: 3rem;
-            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-            border-radius: 16px;
-            border: 2px solid #bae6fd;
-            box-shadow: 0 4px 20px rgba(186, 230, 253, 0.3);
-            position: relative;
-        }
-        
-        .install-buttons h5 {
-            position: absolute;
-            top: 10px;
-            left: 15px;
-            margin: 0;
-            font-size: 0.9rem;
-            color: #1e40af;
-            font-weight: 600;
-        }
-        
-        .install-button-wrapper {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .simple-file-list {
-            background: transparent;
-            border-radius: 0;
-            padding: 0.5rem 0;
-        }
-        
-        .simple-file-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.25rem 0;
-            border-bottom: 1px solid #f3f4f6;
-        }
-        
-        .simple-file-item:last-child {
-            border-bottom: none;
-        }
-        
-        .simple-file-item.ipa-file {
-            background: transparent;
-            border-radius: 0;
-            padding: 0.25rem 0;
-            margin: 0;
-        }
-        
-        .simple-download-link {
-            color: #6b7280;
-            text-decoration: none;
-            font-size: 0.85rem;
-            transition: color 0.2s ease;
-        }
-        
-        .simple-download-link:hover {
-            color: #374151;
-            text-decoration: none;
-        }
-        
-        .file-size {
-            color: #9ca3af;
-            font-size: 0.75rem;
-        }
+
     </style>
 </head>
 
 <body>
-    <h1>APP 安装页（ iOS ） </h1>
+    <h1>APP 安装 </h1>
     <div id="qrcode-container"></div>
     <div id="release-container"></div>
 
@@ -397,56 +284,38 @@
                     const filteredAssets = filterAssets(release.assets);
                     if (filteredAssets.length === 0) return;
 
-                    // 分离 IPA 文件和其他文件
-                    const ipaAssets = filteredAssets.filter(asset => asset.name.toLowerCase().includes('.ipa'));
-                    const otherAssets = filteredAssets.filter(asset => !asset.name.toLowerCase().includes('.ipa'));
-
                     html += `
-                        <div class="release-card ">
+                        <div class="release-card">
                             <h2>${release.name || '未命名版本'}</h2>
-                            <div class="release-meta release-description">
+                            <div class="release-meta">
                                 <span hidden >版本号：${release.tag_name}</span>
-                                    ${release.body ? `<div class="release-description---">${release.body}</div>` : ''}
-
                                 <span>发布日期：${new Date(release.published_at).toLocaleDateString()}</span>
                                 <span> ${new Date(release.published_at).toLocaleTimeString()}</span>
-                                 
+                                <span> | 修改时间：${new Date(release.updated_at).toLocaleDateString()}</span>
+                                <span> ${new Date(release.updated_at).toLocaleTimeString()}</span>
                             </div>
-                            
-                            ${ipaAssets.length > 0 ? `
-                                <div class="install-section">
+                            ${release.body ? `<div class="release-description">${release.body}</div>` : ''}
+                            <div class="assets-container">
+                                ${filteredAssets.map(asset => {
+                                    const isIPA = asset.name.toLowerCase().includes('.ipa');
+                                    const buttonHtml = checkurlshowbuttonhtml(asset.name, release.assets, asset);
                                     
-                                    <div class="install-buttons">
-                                        <h5 >📱安装包 </h5> 
-                                        ${ipaAssets.map(asset => {
-                                            const buttonHtml = checkurlshowbuttonhtml(asset.name, release.assets, asset);
-                                            return `
-                                                <div class="install-button-wrapper">
-                                                    ${buttonHtml}
-                                                </div>
-                                            `;
-                                        }).join('')}
-                                    </div>
-                                </div>
-                            ` : ''}
-                            
-                            <div class="files-section">
-                                 
-                                <div class="simple-file-list">
-                                    ${filteredAssets.map(asset => {
-                                        const isIPA = asset.name.toLowerCase().includes('.ipa');
-                                        return `
-                                            <div class="simple-file-item ${isIPA ? 'ipa-file' : ''}">
+                                    return `
+                                        <div class="asset-item ${isIPA ? 'ipa-asset' : 'other-asset'}">
+                                            <div class="asset-actions">
+                                                ${buttonHtml}
+                                            </div>
+                                            <div class="asset-info">
                                                 <a href="${asset.browser_download_url}" 
                                                    download="${asset.name}"
-                                                   class="simple-download-link">
-                                                    ${isIPA ? '📱' : '📄'} ${asset.name}
+                                                   class="asset-link">
+                                                    ${asset.name}
                                                 </a>
-                                                <span class="file-size">(${formatBytes(asset.size)})</span>
+                                                <div class="asset-size">${formatBytes(asset.size)}</div>
                                             </div>
-                                        `;
-                                    }).join('')}
-                                </div>
+                                        </div>
+                                    `;
+                                }).join('')}
                             </div>
                         </div>
                     `;
@@ -486,9 +355,7 @@
             }, refreshInterval);
         });
     </script>
-    
-    <!-- 页面标记 -->
-    <div style="position: fixed; bottom: 10px; right: 10px; font-size: 10px; color: #6b7280; opacity: 0.6; pointer-events: none; z-index: 9999; font-family: monospace;">---08050008----</div>
+    ---1001844----
 </body>
 
 <!-- 自定义样式 -->
@@ -497,47 +364,42 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            padding: 16px 32px;
-            margin: 8px;
-            border-radius: 12px;
+            padding: 10px 20px;
+            margin: 4px;
+            border-radius: 6px;
             text-decoration: none;
-            font-weight: 600;
+            font-weight: 500;
             transition: all 0.3s ease;
             cursor: pointer;
             border: none;
-            min-width: 140px;
-            font-size: 1rem;
-            position: relative;
-            overflow: hidden;
+            min-width: 80px;
+            font-size: 0.875rem;
         }
 
     .btn-primary {
-        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        background-color: #2563eb;
         color: white;
-        box-shadow: 0 8px 25px -8px rgba(59, 130, 246, 0.5);
-        border: 2px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.4);
     }
 
     .btn-secondary {
-        background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+        background-color: #f97316;
         color: white;
-        box-shadow: 0 8px 25px -8px rgba(249, 115, 22, 0.5);
-        border: 2px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 4px 6px -1px rgba(249, 115, 22, 0.4);
     }
 
     .btn:hover {
-        transform: translateY(-3px) scale(1.02);
-        box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.2);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
     }
 
     .btn:active {
-        transform: translateY(-1px) scale(1.01);
-        box-shadow: 0 8px 25px -8px rgba(0, 0, 0, 0.15);
+        transform: translateY(0);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     }
 
     .btn i {
-        margin-right: 10px;
-        font-size: 1.1em;
+        margin-right: 8px;
     }
 
     .download-container {
