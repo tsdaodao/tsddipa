@@ -282,6 +282,7 @@
         const REPO_OWNER = urlParams.get('owner') || 'tsdaodao';
         const REPO_NAME = urlParams.get('repo') || 'tsddipa';
         const FILE_EXT = (urlParams.get('ext') || '*').toLowerCase();
+        const FILE_NAME = (urlParams.get('name') || '').toLowerCase(); // 新增文件名过滤参数
         
         // 生成二维码
         function generateQRCode() {
@@ -296,19 +297,24 @@
             });
         }
 
-        // 文件类型过滤
+        // 文件类型和文件名过滤
         function filterAssets(assets) {
             const FILE_EXT_Array = FILE_EXT.split(',').filter(v => v); // 解析参数并去空
 
-            // 处理特殊值：空数组、包含 * 或空字符串时返回所有资产
-            if (FILE_EXT_Array.length === 0 || FILE_EXT_Array.includes('*')) {
-                return assets;
-            }
-
-            // 正常过滤：检查文件扩展名是否在允许的数组中
             return assets.filter(asset => {
                 const fileName = asset.name.toLowerCase();
-                // 提取扩展名（从最后一个 . 开始）
+                
+                // 文件名过滤：如果指定了文件名参数，检查文件名是否包含指定字符串
+                if (FILE_NAME && !fileName.includes(FILE_NAME)) {
+                    return false;
+                }
+                
+                // 扩展名过滤：处理特殊值：空数组、包含 * 或空字符串时返回所有资产
+                if (FILE_EXT_Array.length === 0 || FILE_EXT_Array.includes('*')) {
+                    return true;
+                }
+
+                // 正常过滤：检查文件扩展名是否在允许的数组中
                 const ext = fileName.lastIndexOf('.') === -1 ? '' : fileName.split('.').pop();
                 return FILE_EXT_Array.includes(ext);
             });
@@ -388,6 +394,7 @@
                     <div class="config-panel" hidden >
                         当前：<strong>${REPO_OWNER}/${REPO_NAME}</strong>
                         <span hidden class="filter-info">（只显示 .${FILE_EXT} 文件）</span>
+                        ${FILE_NAME ? `<span class="filter-info">（文件名包含：${FILE_NAME}）</span>` : ''}
                     </div>
                 `;
 
@@ -459,7 +466,7 @@
                     <div class="error-box">
                         <strong>错误：</strong>${error.message}<br>
                         正确 URL 格式应为：
-                        <code>?owner=用户名&repo=仓库名&ext=文件后缀</code>
+                        <code>?owner=用户名&repo=仓库名&ext=文件后缀&name=文件名关键词</code>
                     </div>
                 `;
             }
