@@ -266,59 +266,10 @@
             color: #9ca3af;
             font-size: 0.75rem;
         }
-        
-        /* 切换按钮样式 */
-        .toggle-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
-        }
-        
-        .toggle-button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .toggle-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-        }
-        
-        .toggle-button.accelerated {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        }
-        
-        .toggle-button.not-accelerated {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-        }
-        
-        .toggle-icon {
-            font-size: 16px;
-        }
     </style>
 </head>
 
 <body>
-    <!-- 切换按钮 -->
-    <div class="toggle-container">
-        <button id="toggleButton" class="toggle-button accelerated">
-            <span class="toggle-icon">🚀</span>
-            <span id="toggleText">已加速</span>
-        </button>
-    </div>
-    
     <h1>APP 安装页（ iOS ） </h1>
     <div id="qrcode-container"></div>
     <div id="release-container"></div>
@@ -332,12 +283,7 @@
         const REPO_NAME = urlParams.get('repo') || 'tsddipa';
         const FILE_EXT = (urlParams.get('ext') || '*').toLowerCase();
         const FILE_NAME = (urlParams.get('name') || '').toLowerCase(); // 新增文件名过滤参数
-
-        // 加速配置
-        let FAST_URL = 'https://ghfast.top/';
-        const FAST_TAIL = '.plist';
-        let isAccelerated = true; // 默认使用加速
-
+        
         // 生成二维码
         function generateQRCode() {
             const currentURL = window.location.href;
@@ -410,7 +356,7 @@
             if (!plistAsset) {
                 // 如果找不到对应的plist文件，返回下载链接
                 return `
-                    <a href="${FAST_URL}${currentAsset.browser_download_url}" 
+                    <a href="${currentAsset.browser_download_url}" 
                        download="${name}"
                        class="btn btn-secondary">
                         <i class="fa fa-download"></i>
@@ -420,7 +366,7 @@
             }
             
             // 构造plist文件URL（使用GitHub releases的下载链接）
-            const plistUrl = FAST_URL + plistAsset.browser_download_url + (isAccelerated ? FAST_TAIL : '');
+            const plistUrl = plistAsset.browser_download_url;
             
             return `
                 <a href="itms-services://?action=download-manifest&url=${encodeURIComponent(plistUrl)}" 
@@ -514,7 +460,7 @@
                                         const isIPA = asset.name.toLowerCase().includes('.ipa');
                                         return `
                                             <div class="simple-file-item ${isIPA ? 'ipa-file' : ''}">
-                                                <a href="${FAST_URL}${asset.browser_download_url}" 
+                                                <a href="${asset.browser_download_url}" 
                                                    download="${asset.name}"
                                                    class="simple-download-link">
                                                     ${isIPA ? '📱' : '📄'} ${asset.name}
@@ -572,37 +518,11 @@
             ).join('/');
         }
 
-        // 切换加速状态
-        function toggleAcceleration() {
-            isAccelerated = !isAccelerated;
-            FAST_URL = isAccelerated ? 'https://ghfast.top/' : '';
-            
-            const toggleButton = document.getElementById('toggleButton');
-            const toggleText = document.getElementById('toggleText');
-            const toggleIcon = toggleButton.querySelector('.toggle-icon');
-            
-            if (isAccelerated) {
-                toggleButton.className = 'toggle-button accelerated';
-                toggleText.textContent = '已加速';
-                toggleIcon.textContent = '🚀';
-            } else {
-                toggleButton.className = 'toggle-button not-accelerated';
-                toggleText.textContent = '未加速';
-                toggleIcon.textContent = '🐌';
-            }
-            
-            // 重新获取数据以更新所有链接
-            fetchReleases();
-        }
-        
         // 初始化
         window.addEventListener('DOMContentLoaded', () => {
             generateQRCode();
             generateQuickLinks();
             fetchReleases();
-            
-            // 添加切换按钮事件监听
-            document.getElementById('toggleButton').addEventListener('click', toggleAcceleration);
             
             // 12小时后自动刷新页面
             const refreshInterval = 12 * 60 * 60 * 1000; // 12小时 = 12 * 60 * 60 * 1000毫秒
