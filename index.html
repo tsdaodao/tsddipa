@@ -363,8 +363,8 @@
         
         .control-buttons {
             position: fixed;
-            top: 20px;
-            right: 200px;
+            bottom: 20px;
+            right: 20px;
             z-index: 1000;
             display: flex;
             flex-direction: column;
@@ -444,14 +444,21 @@
                 display: none; /* 隐藏标签 */
             }
             
-            .toggle-container, .control-buttons {
+            .toggle-container {
                 position: relative;
                 top: auto;
                 right: auto;
                 margin: 0.5rem 0;
                 text-align: center;
+            }
+            
+            .control-buttons {
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                z-index: 1000;
+                display: flex;
                 flex-direction: row; /* 水平排列按钮 */
-                justify-content: center;
                 gap: 8px; /* 减少按钮间距 */
             }
             
@@ -1022,7 +1029,7 @@
     <div style="position: fixed; bottom: 10px; right: 10px; font-size: 10px; color: #6b7280; opacity: 0.6; pointer-events: none; z-index: 9999; font-family: monospace;">---08050008----</div>
     
     <!-- 快速切换链接 -->
-    <div id="quick-links" style="position: fixed; bottom: 10px; left: 10px; z-index: 9999;"></div>
+    <div id="quick-links" style="position: fixed; bottom: 20px; left: 20px; z-index: 9999;"></div>
 </body>
 
 <!-- 自定义样式 -->
