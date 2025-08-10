@@ -320,6 +320,8 @@
     </div>
     
     <h1>APP 安装页（ iOS ） </h1>
+
+     内测版 
     <div id="qrcode-container"></div>
     <div id="release-container"></div>
 
@@ -374,6 +376,25 @@
             });
         }
 
+        // 检查是否为Payload文件
+        function isPayloadFile(fileName) {
+            return fileName.toLowerCase().includes('payload');
+        }
+
+        // 获取Payload文件的显示名称
+        function getPayloadDisplayName(fileName) {
+            const lowerName = fileName.toLowerCase();
+            if (lowerName.includes('rentuibangpayload')) {
+                return '任推帮待签名包';
+            } else if (lowerName.includes('haigepayload')) {
+                return '海鸽待签名包';
+            } else if (lowerName.includes('temupayload')) {
+                return 'TEMU待签名包';
+            }
+            // 如果没有匹配，返回原文件名（不含扩展名）
+            return fileName.substring(0, fileName.lastIndexOf('.')) + '待签名包';
+        }
+
         // 获取显示名称
         function getDisplayName(fileName) {
             const lowerName = fileName.toLowerCase();
@@ -392,6 +413,11 @@
             const lowerName = name.toLowerCase();
             
             if (!lowerName.includes('.ipa')) {
+                return '';
+            }
+            
+            // 如果是Payload文件，不生成安装按钮
+            if (isPayloadFile(name)) {
                 return '';
             }
             
@@ -475,8 +501,9 @@
                     if (filteredAssets.length === 0) return;
 
                     // 分离 IPA 文件和其他文件
-                    const ipaAssets = filteredAssets.filter(asset => asset.name.toLowerCase().includes('.ipa'));
-                    const otherAssets = filteredAssets.filter(asset => !asset.name.toLowerCase().includes('.ipa'));
+                    const ipaAssets = filteredAssets.filter(asset => asset.name.toLowerCase().includes('.ipa') && !isPayloadFile(asset.name));
+                    const payloadAssets = filteredAssets.filter(asset => isPayloadFile(asset.name));
+                    const otherAssets = filteredAssets.filter(asset => !asset.name.toLowerCase().includes('.ipa') && !isPayloadFile(asset.name));
 
                     html += `
                         <div class="release-card ">
@@ -494,7 +521,7 @@
                                 <div class="install-section">
                                     
                                     <div class="install-buttons">
-                                        <h5 >📱安装包 </h5> 
+                                        <h5 >📱安装包 （内测版）</h5> 
                                         ${ipaAssets.map(asset => {
                                             const buttonHtml = checkurlshowbuttonhtml(asset.name, release.assets, asset);
                                             return `
@@ -507,17 +534,45 @@
                                 </div>
                             ` : ''}
                             
+                            ${payloadAssets.length > 0 ? `
+                                <div class="install-section">
+                                    <div class="install-buttons" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid #f59e0b; box-shadow: 0 4px 20px rgba(245, 158, 11, 0.3);">
+                                        <h5 style="color: #92400e;">📦待签名包</h5> 
+                                        ${payloadAssets.map(asset => {
+                                            const displayName = getPayloadDisplayName(asset.name);
+                                            return `
+                                                <div class="install-button-wrapper">
+                                                    <a href="${FAST_URL}${asset.browser_download_url}" 
+                                                       download="${asset.name}"
+                                                       class="btn btn-secondary" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); box-shadow: 0 8px 25px -8px rgba(245, 158, 11, 0.5);">
+                                                        <i class="fa fa-download"></i>
+                                                        <span>下载 ${displayName}</span>
+                                                    </a>
+                                                </div>
+                                            `;
+                                        }).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
+                            
                             <div class="files-section">
                                  
                                 <div class="simple-file-list">
                                     ${filteredAssets.map(asset => {
                                         const isIPA = asset.name.toLowerCase().includes('.ipa');
+                                        const isPayload = isPayloadFile(asset.name);
+                                        let icon = '📄';
+                                        if (isIPA && !isPayload) {
+                                            icon = '📱';
+                                        } else if (isPayload) {
+                                            icon = '📦';
+                                        }
                                         return `
-                                            <div class="simple-file-item ${isIPA ? 'ipa-file' : ''}">
+                                            <div class="simple-file-item ${isIPA && !isPayload ? 'ipa-file' : ''}">
                                                 <a href="${FAST_URL}${asset.browser_download_url}" 
                                                    download="${asset.name}"
                                                    class="simple-download-link">
-                                                    ${isIPA ? '📱' : '📄'} ${asset.name}
+                                                    ${icon} ${asset.name}
                                                 </a>
                                                 <span class="file-size">(${formatBytes(asset.size)})</span>
                                             </div>
