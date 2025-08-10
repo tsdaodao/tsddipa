@@ -677,10 +677,59 @@
                 // 添加时间戳防止API缓存
                 const timestamp = new Date().getTime();
                 const API_URL = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases?_t=${timestamp}`;
-                const response = await fetch(API_URL);
+                // 多个备用 API 地址
+                const API_URLS = [
+                    `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases?_t=${timestamp}`,
+                    
+                ];
+                
+                let response;
+                let lastError;
+                
+                // 依次尝试所有 API 地址
+                for (let i = 0; i < API_URLS.length; i++) {
+                    try {
+                        console.log(`尝试 API ${i + 1}: ${API_URLS[i]}`);
+                        response = await fetch(API_URLS[i]);
+                        
+                        // 检查响应状态
+                        if (response.ok) {
+                            console.log(`API ${i + 1} 成功`);
+                            break;
+                        } else {
+                            // 获取错误信息
+                            const errorData = await response.json().catch(() => ({}));
+                            console.log(`API ${i + 1} 状态错误:`, response.status, errorData.message || '');
+                            
+                            // 如果是速率限制错误，显示特殊提示
+                            if (response.status === 403 && errorData.message && errorData.message.includes('rate limit')) {
+                                throw new Error('GitHub API 速率限制，请稍后再试或 切换IP 重新访问');
+                            }
+                            
+                            // 如果是最后一个 API，抛出错误
+                            if (i === API_URLS.length - 1) {
+                                throw new Error(`API 请求失败: ${response.status} - ${errorData.message || '未知错误'}`);
+                            }
+                        }
+                    } catch (error) {
+                        console.log(`API ${i + 1} 失败:`, error.message);
+                        lastError = error;
+                        if (i === API_URLS.length - 1) {
+                            throw lastError;
+                        }
+                    }
+                }
 
+                // 检查响应状态
                 if (response.status === 404) {
                     throw new Error('仓库不存在或无权访问');
+                }
+                
+                if (response.status === 403) {
+                    const errorData = await response.json().catch(() => ({}));
+                    if (errorData.message && errorData.message.includes('rate limit')) {
+                        throw new Error('GitHub API 速率限制，请稍后再试或使用认证请求');
+                    }
                 }
 
                 const releases = await response.json();
@@ -795,8 +844,7 @@
                 container.innerHTML = `
                     <div class="error-box">
                         <strong>错误：</strong>${error.message}<br>
-                        正确 URL 格式应为：
-                        <code>?owner=用户名&repo=仓库名&ext=文件后缀&name=文件名关键词</code>
+                        
                     </div>
                 `;
             }
@@ -932,7 +980,7 @@
                 downloadOnlyButton.title = '当前仅显示待签名包'; // 清除提示
             } else {
                 downloadOnlyButton.className = 'control-button download-only';
-                downloadOnlyText.textContent = '仅下载';
+                downloadOnlyText.textContent = '仅显示下载';
                 toggleIcon.textContent = '📥';
                 downloadOnlyButton.title = '切换发给客户的签名包链接'; // 添加提示
             }
