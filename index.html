@@ -24,22 +24,105 @@
             max-width: 1000px;
             margin: 1rem auto;
             padding: 0 1rem;
+            padding-left: 200px; /* 为左侧固定的二维码留出空间 */
         }
 
         #qrcode-container {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            border: 2px solid #e5e7eb;
+            transition: all 0.3s ease;
             text-align: center;
-            margin: 2rem 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        #qrcode-container:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 二维码放大模态框 */
+        .qrcode-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .qrcode-modal.show {
+            display: flex;
+        }
+        
+        .qrcode-modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            max-width: 90%;
+            max-height: 90%;
+            position: relative;
+        }
+        
+        /* 小屏幕二维码点击提示 */
+        @media (max-width: 768px) {
+            #qrcode-container::after {
+                content: "点击放大";
+                position: absolute;
+                bottom: -15px;
+                left: 50%;
+                transform: translateX(-50%);
+                font-size: 8px;
+                color: #9ca3af;
+                white-space: nowrap;
+            }
+        }
+        
+        #qrcode-container::before {
+            content: "📱 扫码安装";
+            display: block;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+            padding: 4px 8px;
+            border-radius: 6px;
         }
 
         .loading {
             font-size: 2.9em;
+            text-align: center;
+            padding: 2rem;
+            color: #6b7280;
         }
 
         #qrcode {
-            display: inline-block;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             padding: 10px;
             border: 1px solid var(--border-color);
             border-radius: 8px;
+        }
+        
+        #qrcode img {
+            display: block;
+            margin: 0 auto;
         }
 
         .config-panel {
@@ -273,9 +356,22 @@
             top: 20px;
             right: 20px;
             z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
         
-        .toggle-button {
+        .control-buttons {
+            position: fixed;
+            top: 20px;
+            right: 200px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .toggle-button, .control-button {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
@@ -289,9 +385,10 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            white-space: nowrap;
         }
         
-        .toggle-button:hover {
+        .toggle-button:hover, .control-button:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
         }
@@ -304,16 +401,94 @@
             background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
         }
         
+        .control-button.download-only {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+        
+        .control-button.copy-url {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        }
+        
         .toggle-icon {
             font-size: 16px;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            body {
+                padding-left: 1rem; /* 小屏幕时恢复正常边距 */
+                padding-top: 0.5rem; /* 减少顶部间距 */
+            }
+            
+            #qrcode-container {
+                position: relative;
+                top: auto;
+                left: auto;
+                margin: 0.3rem auto;
+                max-width: 60px; /* 超小二维码容器 */
+                padding: 2px; /* 最小内边距 */
+                cursor: pointer;
+                border: none; /* 移除边框 */
+                box-shadow: none; /* 移除阴影 */
+                background: transparent; /* 透明背景 */
+            }
+            
+            #qrcode {
+                max-width: 100% !important;
+                height: auto !important;
+                border: none !important; /* 移除二维码边框 */
+                padding: 0 !important; /* 移除二维码内边距 */
+            }
+            
+            #qrcode-container::before {
+                display: none; /* 隐藏标签 */
+            }
+            
+            .toggle-container, .control-buttons {
+                position: relative;
+                top: auto;
+                right: auto;
+                margin: 0.5rem 0;
+                text-align: center;
+                flex-direction: row; /* 水平排列按钮 */
+                justify-content: center;
+                gap: 8px; /* 减少按钮间距 */
+            }
+            
+            .toggle-button, .control-button {
+                padding: 8px 16px; /* 减小按钮尺寸 */
+                font-size: 12px; /* 减小字体 */
+                border-radius: 20px;
+            }
+            
+            .toggle-icon {
+                font-size: 14px; /* 减小图标 */
+            }
+            
+            h1 {
+                font-size: 1.5rem; /* 减小标题字体 */
+                margin: 0.5rem 0; /* 减少标题间距 */
+            }
         }
     </style>
 </head>
 
 <body>
+    <!-- 控制按钮 -->
+    <div class="control-buttons">
+        <button id="downloadOnlyButton" class="control-button download-only">
+            <span class="toggle-icon">📥</span>
+            <span id="downloadOnlyText">仅下载</span>
+        </button>
+        <button id="copyUrlButton" class="control-button copy-url">
+            <span class="toggle-icon">🔗</span>
+            <span>复制链接</span>
+        </button>
+    </div>
+    
     <!-- 切换按钮 -->
     <div class="toggle-container">
-        <button id="toggleButton" class="toggle-button accelerated">
+        <button id="toggleButton" class="toggle-button accelerated" title='加速国内github访问'>
             <span class="toggle-icon">🚀</span>
             <span id="toggleText">已加速</span>
         </button>
@@ -324,6 +499,13 @@
      内测版 
     <div id="qrcode-container"></div>
     <div id="release-container"></div>
+    
+    <!-- 二维码放大模态框 -->
+    <div id="qrcodeModal" class="qrcode-modal" onclick="closeQRCodeModal()">
+        <div class="qrcode-modal-content" onclick="event.stopPropagation()">
+            <div id="qrcodeModalContent"></div>
+        </div>
+    </div>
 
     <script>
         // https://tsdaodao2.github.io/testreleases/index6.html?owner=tsdaodao2&repo=testreleases&ext=html
@@ -334,22 +516,44 @@
         const REPO_NAME = urlParams.get('repo') || 'tsddipa';
         const FILE_EXT = (urlParams.get('ext') || '*').toLowerCase();
         const FILE_NAME = (urlParams.get('name') || '').toLowerCase(); // 新增文件名过滤参数
+        const DOWNLOAD_ONLY = urlParams.get('download_only') === 'true'; // 仅下载模式参数
+        const ACCELERATED = urlParams.get('accelerated') !== 'false'; // 加速状态参数，默认为true
 
         // 加速配置
-        let FAST_URL = 'https://ghfast.top/';
+        let FAST_URL = ACCELERATED ? 'https://ghfast.top/' : '';
         const FAST_TAIL = '.plist';
-        let isAccelerated = true; // 默认使用加速
+        let isAccelerated = ACCELERATED; // 从URL参数初始化加速状态
 
         // 生成二维码
         function generateQRCode() {
-            const currentURL = window.location.href;
-            new QRCode(document.getElementById("qrcode-container"), {
-                text: currentURL,
-                width: 150,
-                height: 150,
-                colorDark: "#000000",
-                colorLight: "#ffffff",
-                correctLevel: QRCode.CorrectLevel.H
+            return new Promise((resolve) => {
+                const currentURL = window.location.href;
+                
+                // 根据屏幕尺寸决定二维码大小
+                const isSmallScreen = window.innerWidth <= 768;
+                const mainQRSize = isSmallScreen ? 60 : 150; // 小屏幕60px，大屏幕150px
+                
+                // 生成主二维码
+                new QRCode(document.getElementById("qrcode-container"), {
+                    text: currentURL,
+                    width: mainQRSize,
+                    height: mainQRSize,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+                
+                // 生成模态框中的大二维码
+                new QRCode(document.getElementById("qrcodeModalContent"), {
+                    text: currentURL,
+                    width: 250,
+                    height: 250,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+                
+                resolve();
             });
         }
 
@@ -467,6 +671,7 @@
                     throw new Error('缺少必要参数：owner 和 repo');
                 }
 
+                // 立即显示加载状态
                 container.innerHTML = '<div class="loading">加载中...</div>';
 
                 // 添加时间戳防止API缓存
@@ -517,7 +722,7 @@
                                  
                             </div>
                             
-                            ${ipaAssets.length > 0 ? `
+                            ${ipaAssets.length > 0 && !DOWNLOAD_ONLY ? `
                                 <div class="install-section">
                                     
                                     <div class="install-buttons">
@@ -608,30 +813,133 @@
 
         // 生成快速切换链接
         function generateQuickLinks() {
-            const quickLinksDiv = document.getElementById('quick-links');
-            const currentUrl = new URL(window.location.href);
-            
-            // 创建基础URL（保持owner、repo、ext参数）
-            const baseUrl = new URL(window.location.href);
-            baseUrl.searchParams.delete('name'); // 移除name参数作为all链接
-            
-            const links = [
-                { name: 'ALL', url: baseUrl.toString() },
-                { name: '任推帮', url: baseUrl.toString() + (baseUrl.search ? '&' : '?') + 'name=rentuibang' },
-                { name: '海鸽', url: baseUrl.toString() + (baseUrl.search ? '&' : '?') + 'name=haige' },
-                { name: 'TEMU', url: baseUrl.toString() + (baseUrl.search ? '&' : '?') + 'name=temu' }
-            ];
-            
-            quickLinksDiv.innerHTML = links.map(link => 
-                `<a href="${link.url}" style="margin-right: 0.10px; color: #0366d6; text-decoration: none; font-size: 12px;">${link.name}</a>`
-            ).join('/');
+            return new Promise((resolve) => {
+                const quickLinksDiv = document.getElementById('quick-links');
+                const currentUrl = new URL(window.location.href);
+                
+                // 创建基础URL（保持owner、repo、ext参数）
+                const baseUrl = new URL(window.location.href);
+                baseUrl.searchParams.delete('name'); // 移除name参数作为all链接
+                
+                const links = [
+                    { name: 'ALL', url: baseUrl.toString() },
+                    { name: '任推帮', url: baseUrl.toString() + (baseUrl.search ? '&' : '?') + 'name=rentuibang' },
+                    { name: '海鸽', url: baseUrl.toString() + (baseUrl.search ? '&' : '?') + 'name=haige' },
+                    { name: 'TEMU', url: baseUrl.toString() + (baseUrl.search ? '&' : '?') + 'name=temu' }
+                ];
+                
+                quickLinksDiv.innerHTML = links.map(link => 
+                    `<a href="${link.url}" style="margin-right: 0.10px; color: #0366d6; text-decoration: none; font-size: 12px;">${link.name}</a>`
+                ).join('/');
+                resolve();
+            });
         }
 
         // 切换加速状态
         function toggleAcceleration() {
-            isAccelerated = !isAccelerated;
-            FAST_URL = isAccelerated ? 'https://ghfast.top/' : '';
+            const currentUrl = new URL(window.location.href);
+            const isCurrentlyAccelerated = currentUrl.searchParams.get('accelerated') !== 'false';
             
+            if (isCurrentlyAccelerated) {
+                currentUrl.searchParams.set('accelerated', 'false');
+            } else {
+                currentUrl.searchParams.set('accelerated', 'true');
+            }
+            
+            // 更新地址栏并刷新页面
+            window.location.href = currentUrl.toString();
+        }
+        
+        // 切换仅下载模式
+        function toggleDownloadOnly() {
+            const currentUrl = new URL(window.location.href);
+            const isCurrentlyDownloadOnly = currentUrl.searchParams.get('download_only') === 'true';
+            
+            if (isCurrentlyDownloadOnly) {
+                currentUrl.searchParams.delete('download_only');
+            } else {
+                currentUrl.searchParams.set('download_only', 'true');
+            }
+            
+            // 更新地址栏并刷新页面
+            window.location.href = currentUrl.toString();
+        }
+        
+        // 复制当前页面地址
+        async function copyCurrentUrl() {
+            try {
+                await navigator.clipboard.writeText(window.location.href);
+                
+                // 显示复制成功提示
+                const copyButton = document.getElementById('copyUrlButton');
+                const originalText = copyButton.innerHTML;
+                copyButton.innerHTML = '<span class="toggle-icon">✅</span><span>已复制</span>';
+                copyButton.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+                
+                setTimeout(() => {
+                    copyButton.innerHTML = originalText;
+                    copyButton.style.background = 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)';
+                }, 2000);
+                
+            } catch (err) {
+                console.error('复制失败:', err);
+                alert('复制失败，请手动复制地址栏');
+            }
+        }
+        
+        // 初始化
+        window.addEventListener('DOMContentLoaded', () => {
+            // 立即显示按钮状态，不等待其他操作
+            updateDownloadOnlyButtonState();
+            
+            // 添加按钮事件监听
+            document.getElementById('toggleButton').addEventListener('click', toggleAcceleration);
+            document.getElementById('downloadOnlyButton').addEventListener('click', toggleDownloadOnly);
+            document.getElementById('copyUrlButton').addEventListener('click', copyCurrentUrl);
+            
+            // 添加二维码点击事件（仅在小屏幕时）
+            if (window.innerWidth <= 768) {
+                document.getElementById('qrcode-container').addEventListener('click', openQRCodeModal);
+            }
+            
+            // 更新加速按钮状态
+            updateAccelerationButtonState();
+            
+            // 并行执行非阻塞操作
+            Promise.all([
+                generateQRCode(),
+                generateQuickLinks(),
+                fetchReleases()
+            ]).catch(console.error);
+            
+            // 12小时后自动刷新页面
+            const refreshInterval = 12 * 60 * 60 * 1000; // 12小时 = 12 * 60 * 60 * 1000毫秒
+            setTimeout(() => {
+                window.location.reload();
+            }, refreshInterval);
+        });
+        
+        // 更新仅下载按钮状态
+        function updateDownloadOnlyButtonState() {
+            const downloadOnlyButton = document.getElementById('downloadOnlyButton');
+            const downloadOnlyText = document.getElementById('downloadOnlyText');
+            const toggleIcon = downloadOnlyButton.querySelector('.toggle-icon');
+            
+            if (DOWNLOAD_ONLY) {
+                downloadOnlyButton.className = 'control-button download-only active';
+                downloadOnlyText.textContent = '显示全部';
+                toggleIcon.textContent = '📋';
+                downloadOnlyButton.title = '当前仅显示待签名包'; // 清除提示
+            } else {
+                downloadOnlyButton.className = 'control-button download-only';
+                downloadOnlyText.textContent = '仅下载';
+                toggleIcon.textContent = '📥';
+                downloadOnlyButton.title = '切换发给客户的签名包链接'; // 添加提示
+            }
+        }
+        
+        // 更新加速按钮状态
+        function updateAccelerationButtonState() {
             const toggleButton = document.getElementById('toggleButton');
             const toggleText = document.getElementById('toggleText');
             const toggleIcon = toggleButton.querySelector('.toggle-icon');
@@ -645,26 +953,21 @@
                 toggleText.textContent = '未加速';
                 toggleIcon.textContent = '🐌';
             }
-            
-            // 重新获取数据以更新所有链接
-            fetchReleases();
         }
         
-        // 初始化
-        window.addEventListener('DOMContentLoaded', () => {
-            generateQRCode();
-            generateQuickLinks();
-            fetchReleases();
-            
-            // 添加切换按钮事件监听
-            document.getElementById('toggleButton').addEventListener('click', toggleAcceleration);
-            
-            // 12小时后自动刷新页面
-            const refreshInterval = 12 * 60 * 60 * 1000; // 12小时 = 12 * 60 * 60 * 1000毫秒
-            setTimeout(() => {
-                window.location.reload();
-            }, refreshInterval);
-        });
+        // 打开二维码模态框
+        function openQRCodeModal() {
+            const modal = document.getElementById('qrcodeModal');
+            modal.classList.add('show');
+            document.body.style.overflow = 'hidden'; // 防止背景滚动
+        }
+        
+        // 关闭二维码模态框
+        function closeQRCodeModal() {
+            const modal = document.getElementById('qrcodeModal');
+            modal.classList.remove('show');
+            document.body.style.overflow = ''; // 恢复背景滚动
+        }
     </script>
     
     <!-- 页面标记 -->
