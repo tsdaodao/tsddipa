@@ -682,11 +682,11 @@
                 container.innerHTML = '<div class="loading">加载中...</div>';
 
                 // 添加时间戳防止API缓存
-                const timestamp = new Date().getTime();
+                const timestamp = Math.floor(new Date().getTime() / 60000); // 分钟级别的时间戳
                 const API_URL = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases?_t=${timestamp}`;
                 // 多个备用 API 地址
                 const API_URLS = [
-                `https://api.github.com/repos/1${REPO_OWNER}/${REPO_NAME}/releases?_t=${timestamp}`,
+                `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases?_t=${timestamp}`,
                 `https://ghfast.top/https://raw.githubusercontent.com/tsdaodao/tsddipa/refs/heads/main/tsdd/releases3.0.1.json?_t=${timestamp}`,
 
                 `https://tsdaodao.github.io/tsddipa/tsdd/releases3.0.1.json?_t=${timestamp}`,
@@ -695,16 +695,34 @@
                 
                 let response;
                 let lastError;
+                let rateLimitInfo = null; // 存储当前页面的速率限制信息
                 
                 // 依次尝试所有 API 地址
                 for (let i = 0; i < API_URLS.length; i++) {
                     try {
                         console.log(`尝试 API ${i + 1}: ${API_URLS[i]}`);
                         response = await fetch(API_URLS[i]);
-                        
+                        if (API_URLS[i].includes('api.github.com')) {
+                                const limit = response.headers.get('x-ratelimit-limit');
+                                const remaining = response.headers.get('x-ratelimit-remaining');
+                                const reset = response.headers.get('x-ratelimit-reset');
+                                
+                                if (limit && remaining) {
+                                    rateLimitInfo = {
+                                        limit: parseInt(limit),
+                                        remaining: parseInt(remaining),
+                                        reset: reset ? new Date(parseInt(reset) * 1000) : null
+                                    };
+                                    console.log('GitHub API 速率限制信息:', rateLimitInfo);
+                                }
+                            }
                         // 检查响应状态
                         if (response.ok) {
                             console.log(`API ${i + 1} 成功`);
+                            
+                            // 检查是否是GitHub API并获取速率限制信息
+                            
+                            
                             break;
                         } else {
                             // 获取错误信息
@@ -847,6 +865,17 @@
                         </div>
                     `;
                 });
+                
+                // 在页面底部添加速率限制信息
+                if (rateLimitInfo) {
+                    const resetTime = rateLimitInfo.reset ? rateLimitInfo.reset.toLocaleTimeString() : '未知';
+                    html += `
+                        <div class="rate-limit-info" style="font-size: 12px; color: #666; margin: 20px 0; padding: 8px; background: #f0f8ff; border: 1px solid #b3d9ff; border-radius: 6px; text-align: center;">
+                            📊 GitHub API 速率限制: <strong>${rateLimitInfo.remaining}/${rateLimitInfo.limit}</strong> 次请求剩余
+                            ${rateLimitInfo.reset ? ` (重置时间: ${resetTime})` : ''}
+                        </div>
+                    `;
+                }
 
                 container.innerHTML = html || '<div class="error">没有匹配的文件</div>';
 
