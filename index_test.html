@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Releases | 版本发布</title>
+    <!-- 禁止缓存的meta标签 -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0, private">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta http-equiv="Last-Modified" content="0">
+    <!-- 引入 QRCode.js -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #0366d6;
+            --border-color: #e1e4e8;
+            --bg-color: #f6f8fa;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            max-width: 1000px;
+            margin: 1rem auto;
+            padding: 0 1rem;
+            padding-left: 200px; /* 为左侧固定的二维码留出空间 */
+        }
+
+        #qrcode-container {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            border: 2px solid #e5e7eb;
+            transition: all 0.3s ease;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        #qrcode-container:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 二维码放大模态框 */
+        .qrcode-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .qrcode-modal.show {
+            display: flex;
+        }
+        
+        .qrcode-modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            max-width: 90%;
+            max-height: 90%;
+            position: relative;
+        }
+        
+        /* 小屏幕二维码点击提示 */
+        @media (max-width: 768px) {
+            #qrcode-container::after {
+                content: "点击放大";
+                position: absolute;
+                bottom: -15px;
+                left: 50%;
+                transform: translateX(-50%);
+                font-size: 8px;
+                color: #9ca3af;
+                white-space: nowrap;
+            }
+        }
+        
+        #qrcode-container::before {
+            content: "📱 扫码安装";
+            display: block;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+
+        .loading {
+            font-size: 2.9em;
+            text-align: center;
+            padding: 2rem;
+            color: #6b7280;
+        }
+
+        #qrcode {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+        }
+        
+        #qrcode img {
+            display: block;
+            margin: 0 auto;
+        }
+
+        .config-panel {
+            background: var(--bg-color);
+            padding: 1rem;
+            border-radius: 6px;
+            margin: 1rem 0;
+        }
+
+        .release-card {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .filter-info {
+            color: #586069;
+            margin: 0.5rem 0;
+            font-size: 0.9em;
+        }
+
+        /* 保持原有样式，新增以下内容 */
+        .param-input {
+            padding: 0.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            margin-right: 0.5rem;
+        }
+
+        .error-box {
+            color: #dc3545;
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+        }
+        
+        .release-description {
+            /* background: #f8f9fa; */
+            border-left: 4px solid var(--primary-color);
+             padding: 1rem;
+           /* margin: 1rem 0;
+            border-radius: 0 4px 4px 0;
+            white-space: pre-wrap;
+            font-size: 0.9em;
+            color: #586069; */
+        }
+        
+        .assets-container {
+            margin-top: 1rem;
+        }
+        
+        .asset-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: white;
+            transition: all 0.2s ease;
+            gap: 1rem;
+        }
+        
+        .asset-item:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border-color: var(--primary-color);
+        }
+        
+        .ipa-asset {
+            border-left: 4px solid #2563eb;
+            background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+        }
+        
+        .other-asset {
+            border-left: 4px solid #6b7280;
+        }
+        
+        .asset-info {
+            flex: 1;
+            text-align: right;
+        }
+        
+        .asset-name {
+            font-weight: 500;
+            color: #1f2937;
+            margin-bottom: 0.25rem;
+        }
+        
+        .asset-size {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+        
+        .asset-actions {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        
+        .download-link {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            background: #f3f4f6;
+            color: #374151;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+        
+        .download-link:hover {
+            background: #e5e7eb;
+            color: #1f2937;
+        }
+        
+        .download-link i {
+            margin-right: 4px;
+        }
+        
+        /* 新增样式 */
+        .install-section, .files-section {
+            margin-top: 1.5rem;
+        }
+        
+        .install-section h3, .files-section h3 {
+            color: #1f2937;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+        
+        .install-section h3 {
+            color: #2563eb;
+            border-bottom-color: #2563eb;
+        }
+        
+        .files-section h3 {
+            color: #6b7280;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            padding-bottom: 0.25rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .install-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            padding-top: 3rem;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border-radius: 16px;
+            border: 2px solid #bae6fd;
+            box-shadow: 0 4px 20px rgba(186, 230, 253, 0.3);
+            position: relative;
+        }
+        
+        .install-buttons h5 {
+            position: absolute;
+            top: 10px;
+            left: 15px;
+            margin: 0;
+            font-size: 0.9rem;
+            color: #1e40af;
+            font-weight: 600;
+        }
+        
+        .install-button-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .simple-file-list {
+            background: transparent;
+            border-radius: 0;
+            padding: 0.5rem 0;
+        }
+        
+        .simple-file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.25rem 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        
+        .simple-file-item:last-child {
+            border-bottom: none;
+        }
+        
+        .simple-file-item.ipa-file {
+            background: transparent;
+            border-radius: 0;
+            padding: 0.25rem 0;
+            margin: 0;
+        }
+        
+        .simple-download-link {
+            color: #6b7280;
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: color 0.2s ease;
+        }
+        
+        .simple-download-link:hover {
+            color: #374151;
+            text-decoration: none;
+        }
+        
+        .file-size {
+            color: #9ca3af;
+            font-size: 0.75rem;
+        }
+        
+        /* 切换按钮样式 */
+        .toggle-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .control-buttons {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .toggle-button, .control-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+        
+        .toggle-button:hover, .control-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .toggle-button.accelerated {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .toggle-button.not-accelerated {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        .control-button.download-only {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+        
+        .control-button.copy-url {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        }
+        
+        .toggle-icon {
+            font-size: 16px;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            body {
+                padding-left: 1rem; /* 小屏幕时恢复正常边距 */
+                padding-top: 0.5rem; /* 减少顶部间距 */
+            }
+            
+            #qrcode-container {
+                position: relative;
+                top: auto;
+                left: auto;
+                margin: 0.3rem auto;
+                max-width: 60px; /* 超小二维码容器 */
+                padding: 2px; /* 最小内边距 */
+                cursor: pointer;
+                border: none; /* 移除边框 */
+                box-shadow: none; /* 移除阴影 */
+                background: transparent; /* 透明背景 */
+            }
+            
+            #qrcode {
+                max-width: 100% !important;
+                height: auto !important;
+                border: none !important; /* 移除二维码边框 */
+                padding: 0 !important; /* 移除二维码内边距 */
+            }
+            
+            #qrcode-container::before {
+                display: none; /* 隐藏标签 */
+            }
+            
+            .toggle-container {
+                position: relative;
+                top: auto;
+                right: auto;
+                margin: 0.5rem 0;
+                text-align: center;
+            }
+            
+            .control-buttons {
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                z-index: 1000;
+                display: flex;
+                flex-direction: row; /* 水平排列按钮 */
+                gap: 8px; /* 减少按钮间距 */
+            }
+            
+            .toggle-button, .control-button {
+                padding: 8px 16px; /* 减小按钮尺寸 */
+                font-size: 12px; /* 减小字体 */
+                border-radius: 20px;
+            }
+            
+            .toggle-icon {
+                font-size: 14px; /* 减小图标 */
+            }
+            
+            h1 {
+                font-size: 1.5rem; /* 减小标题字体 */
+                margin: 0.5rem 0; /* 减少标题间距 */
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 控制按钮 -->
+    <div class="control-buttons">
+        <button id="downloadOnlyButton" class="control-button download-only">
+            <span class="toggle-icon">📥</span>
+            <span id="downloadOnlyText">仅下载</span>
+        </button>
+        <button id="copyUrlButton" class="control-button copy-url">
+            <span class="toggle-icon">🔗</span>
+            <span>复制链接</span>
+        </button>
+    </div>
+    
+    <!-- 切换按钮 -->
+    <div class="toggle-container">
+        <button id="toggleButton" class="toggle-button accelerated" title='加速国内github访问'>
+            <span class="toggle-icon">🚀</span>
+            <span id="toggleText">已加速</span>
+        </button>
+    </div>
+    
+    <h1>APP 安装页（ iOS ） </h1>
+
+     内测版 
+    <div id="qrcode-container"></div>
+    <div id="release-container"></div>
+    
+    <!-- 二维码放大模态框 -->
+    <div id="qrcodeModal" class="qrcode-modal" onclick="closeQRCodeModal()">
+        <div class="qrcode-modal-content" onclick="event.stopPropagation()">
+            <div id="qrcodeModalContent"></div>
+        </div>
+    </div>
+
+    <script>
+        // https://tsdaodao2.github.io/testreleases/index6.html?owner=tsdaodao2&repo=testreleases&ext=html
+
+        // 从 URL 参数获取配置
+        const urlParams = new URLSearchParams(window.location.search);
+        const REPO_OWNER = urlParams.get('owner') || 'tsdaodao';
+        const REPO_NAME = urlParams.get('repo') || 'tsddipa';
+        const FILE_EXT = (urlParams.get('ext') || '*').toLowerCase();
+        const FILE_NAME = (urlParams.get('name') || '').toLowerCase(); // 新增文件名过滤参数
+        const DOWNLOAD_ONLY = urlParams.get('download_only') === 'true'; // 仅下载模式参数
+        const ACCELERATED = urlParams.get('accelerated') !== 'false'; // 加速状态参数，默认为true
+
+        // 加速配置
+        let FAST_URL = ACCELERATED ? 'https://ghfast.top/' : '';
+        const FAST_TAIL = '.plist';
+        let isAccelerated = ACCELERATED; // 从URL参数初始化加速状态
+
+        // 生成二维码
+        function generateQRCode() {
+            return new Promise((resolve) => {
+                const currentURL = window.location.href;
+                
+                // 根据屏幕尺寸决定二维码大小
+                const isSmallScreen = window.innerWidth <= 768;
+                const mainQRSize = isSmallScreen ? 60 : 150; // 小屏幕60px，大屏幕150px
+                
+                // 生成主二维码
+                new QRCode(document.getElementById("qrcode-container"), {
+                    text: currentURL,
+                    width: mainQRSize,
+                    height: mainQRSize,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+                
+                // 生成模态框中的大二维码
+                new QRCode(document.getElementById("qrcodeModalContent"), {
+                    text: currentURL,
+                    width: 250,
+                    height: 250,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+                
+                resolve();
+            });
+        }
+
+        // 文件类型和文件名过滤
+        function filterAssets(assets) {
+            const FILE_EXT_Array = FILE_EXT.split(',').filter(v => v); // 解析参数并去空
+
+            return assets.filter(asset => {
+                const fileName = asset.name.toLowerCase();
+                
+                // 文件名过滤：如果指定了文件名参数，检查文件名是否包含指定字符串
+                if (FILE_NAME && !fileName.includes(FILE_NAME)) {
+                    return false;
+                }
+                
+                // 扩展名过滤：处理特殊值：空数组、包含 * 或空字符串时返回所有资产
+                if (FILE_EXT_Array.length === 0 || FILE_EXT_Array.includes('*')) {
+                    return true;
+                }
+
+                // 正常过滤：检查文件扩展名是否在允许的数组中
+                const ext = fileName.lastIndexOf('.') === -1 ? '' : fileName.split('.').pop();
+                return FILE_EXT_Array.includes(ext);
+            });
+        }
+
+        // 检查是否为Payload文件
+        function isPayloadFile(fileName) {
+            return fileName.toLowerCase().includes('payload');
+        }
+
+        // 获取Payload文件的显示名称
+        function getPayloadDisplayName(fileName) {
+            const lowerName = fileName.toLowerCase();
+            if (lowerName.includes('rentuibangpayload')) {
+                return '任推帮待签名包';
+            } else if (lowerName.includes('haigepayload')) {
+                return '海鸽待签名包';
+            } else if (lowerName.includes('temupayload')) {
+                return 'TEMU待签名包';
+            }
+            // 如果没有匹配，返回原文件名（不含扩展名）
+            return fileName.substring(0, fileName.lastIndexOf('.')) + '待签名包';
+        }
+
+        // 获取显示名称
+        function getDisplayName(fileName) {
+            const lowerName = fileName.toLowerCase();
+            if (lowerName.includes('haige')) {
+                return '海鸽';
+            } else if (lowerName.includes('rentuibang')) {
+                return '任推帮';
+            } else if (lowerName.includes('temu')) {
+                return 'TEMU';
+            }
+            // 如果没有匹配，返回原文件名（不含扩展名）
+            return fileName.substring(0, fileName.lastIndexOf('.'));
+        }
+
+        function checkurlshowbuttonhtml(name, releaseAssets, currentAsset) {
+            const lowerName = name.toLowerCase();
+            
+            if (!lowerName.includes('.ipa')) {
+                return '';
+            }
+            
+            // 如果是Payload文件，不生成安装按钮
+            if (isPayloadFile(name)) {
+                return '';
+            }
+            
+            // 提取文件名（不含扩展名）
+            const baseName = name.substring(0, name.lastIndexOf('.'));
+            // 获取显示名称
+            const displayName = getDisplayName(name);
+            // 构造plist文件名（与ipa文件同名，扩展名改为plist）
+            const plistName = baseName + '.plist';
+            
+            // 在同一个release的assets中查找对应的plist文件
+            const plistAsset = releaseAssets.find(asset => 
+                asset.name.toLowerCase() === plistName.toLowerCase()
+            );
+            
+            if (!plistAsset) {
+                // 如果找不到对应的plist文件，返回下载链接
+                return `
+                    <a href="${FAST_URL}${currentAsset.browser_download_url}" 
+                       download="${name}"
+                       class="btn btn-secondary">
+                        <i class="fa fa-download"></i>
+                        <span>下载 ${displayName}</span>
+                    </a>
+                `;
+            }
+            
+            // 构造plist文件URL（使用GitHub releases的下载链接）
+            const plistUrl = FAST_URL + plistAsset.browser_download_url + (isAccelerated ? FAST_TAIL : '');
+            
+            return `
+                <a href="itms-services://?action=download-manifest&url=${encodeURIComponent(plistUrl)}" 
+                   class="btn btn-primary" data-mode="all">
+                    <i class="fa fa-flask"></i>
+                    <span>安装 ${displayName}</span>
+                    <span hidden>${plistUrl}</span>
+                </a>
+            `;
+        }
+
+        async function fetchReleases() {
+            const container = document.getElementById('release-container');
+
+            try {
+                // 参数验证
+                if (!REPO_OWNER || !REPO_NAME) {
+                    throw new Error('缺少必要参数：owner 和 repo');
+                }
+
+                // 立即显示加载状态
+                container.innerHTML = '<div class="loading">加载中...</div>';
+
+                // 添加时间戳防止API缓存
+                const timestamp = new Date().getTime();
+                const API_URL = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases?_t=${timestamp}`;
+                // 多个备用 API 地址
+                const API_URLS = [
+                `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases?_t=${timestamp}`,
+                `https://github.com/tsdaodao/tsddipa/releases/download/v3.0.1/releases.json`,
+               
+                ];
+                
+                let response;
+                let lastError;
+                
+                // 依次尝试所有 API 地址
+                for (let i = 0; i < API_URLS.length; i++) {
+                    try {
+                        console.log(`尝试 API ${i + 1}: ${API_URLS[i]}`);
+                        
+                        // 添加fetch选项来避免CORS问题
+                        const fetchOptions = {
+                            method: 'GET',
+                            mode: 'cors', // 使用cors模式
+                            credentials: 'omit', // 不发送cookies
+                            headers: {
+                                'Accept': 'application/json',
+                                // 移除可能导致CORS问题的头部
+                            }
+                        };
+                        
+                        response = await fetch(API_URLS[i], fetchOptions);
+                        
+                        // 检查响应状态
+                        if (response.ok) {
+                            console.log(`API ${i + 1} 成功`);
+                            break;
+                        } else {
+                            // 获取错误信息
+                            const errorData = await response.json().catch(() => ({}));
+                            console.log(`API ${i + 1} 状态错误:`, response.status, errorData.message || '');
+                            
+                            // 如果是速率限制错误，显示特殊提示
+                            if (response.status === 403 && errorData.message && errorData.message.includes('rate limit')) {
+                                throw new Error('GitHub API 速率限制，请稍后再试或 切换IP 重新访问');
+                            }
+                            
+                            // 如果是最后一个 API，抛出错误
+                            if (i === API_URLS.length - 1) {
+                                throw new Error(`API 请求失败: ${response.status} - ${errorData.message || '未知错误'}`);
+                            }
+                        }
+                    } catch (error) {
+                        console.log(`API ${i + 1} 失败:`, error.message);
+                        
+                        // 如果是CORS错误，尝试不同的策略
+                        if (error.message.includes('CORS') || error.message.includes('cors')) {
+                            console.log('检测到CORS错误，尝试备用策略...');
+                            try {
+                                // 尝试使用no-cors模式
+                                const noCorsResponse = await fetch(API_URLS[i], {
+                                    method: 'GET',
+                                    mode: 'no-cors',
+                                    credentials: 'omit'
+                                });
+                                
+                                if (noCorsResponse.type === 'opaque') {
+                                    console.log('no-cors模式成功，但无法读取响应内容');
+                                    // 对于opaque响应，我们无法读取内容，所以继续下一个API
+                                    continue;
+                                }
+                            } catch (noCorsError) {
+                                console.log('no-cors模式也失败:', noCorsError.message);
+                            }
+                        }
+                        
+                        lastError = error;
+                        if (i === API_URLS.length - 1) {
+                            throw lastError;
+                        }
+                    }
+                }
+
+                // 检查响应状态
+                if (response.status === 404) {
+                    throw new Error('仓库不存在或无权访问');
+                }
+                
+                if (response.status === 403) {
+                    const errorData = await response.json().catch(() => ({}));
+                    if (errorData.message && errorData.message.includes('rate limit')) {
+                        throw new Error('GitHub API 速率限制，请稍后再试或使用认证请求');
+                    }
+                }
+
+                const releases = await response.json();
+
+                if (!Array.isArray(releases) || releases.length === 0) {
+                    container.innerHTML = '<div class="error">该仓库暂无 Release</div>';
+                    return;
+                }
+
+                // 构造显示内容
+                let html = `
+                    <div class="config-panel" hidden >
+                        当前：<strong>${REPO_OWNER}/${REPO_NAME}</strong>
+                        <span hidden class="filter-info">（只显示 .${FILE_EXT} 文件）</span>
+                        ${FILE_NAME ? `<span class="filter-info">（文件名包含：${FILE_NAME}）</span>` : ''}
+                    </div>
+                `;
+
+                releases.sort((a, b) => new Date(b.published_at) - new Date(a.published_at));
+
+                releases.forEach(release => {
+                    const filteredAssets = filterAssets(release.assets);
+                    if (filteredAssets.length === 0) return;
+
+                    // 分离 IPA 文件和其他文件
+                    const ipaAssets = filteredAssets.filter(asset => asset.name.toLowerCase().includes('.ipa') && !isPayloadFile(asset.name));
+                    const payloadAssets = filteredAssets.filter(asset => isPayloadFile(asset.name));
+                    const otherAssets = filteredAssets.filter(asset => !asset.name.toLowerCase().includes('.ipa') && !isPayloadFile(asset.name));
+
+                    html += `
+                        <div class="release-card ">
+                            <h2>${release.name || '未命名版本'}</h2>
+                            <div class="release-meta release-description">
+                                <span hidden >版本号：${release.tag_name}</span>
+                                    ${release.body ? `<div class="release-description---">${release.body}</div>` : ''}
+
+                                <span>发布日期：${new Date(release.published_at).toLocaleDateString()}</span>
+                                <span> ${new Date(release.published_at).toLocaleTimeString()}</span>
+                                 
+                            </div>
+                            
+                            ${ipaAssets.length > 0 && !DOWNLOAD_ONLY ? `
+                                <div class="install-section">
+                                    
+                                    <div class="install-buttons">
+                                        <h5 >📱安装包 （内测版）</h5> 
+                                        ${ipaAssets.map(asset => {
+                                            const buttonHtml = checkurlshowbuttonhtml(asset.name, release.assets, asset);
+                                            return `
+                                                <div class="install-button-wrapper">
+                                                    ${buttonHtml}
+                                                </div>
+                                            `;
+                                        }).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
+                            
+                            ${payloadAssets.length > 0 ? `
+                                <div class="install-section">
+                                    <div class="install-buttons" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid #f59e0b; box-shadow: 0 4px 20px rgba(245, 158, 11, 0.3);">
+                                        <h5 style="color: #92400e;">📦待签名包</h5> 
+                                        ${payloadAssets.map(asset => {
+                                            const displayName = getPayloadDisplayName(asset.name);
+                                            return `
+                                                <div class="install-button-wrapper">
+                                                    <a href="${FAST_URL}${asset.browser_download_url}" 
+                                                       download="${asset.name}"
+                                                       class="btn btn-secondary" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); box-shadow: 0 8px 25px -8px rgba(245, 158, 11, 0.5);">
+                                                        <i class="fa fa-download"></i>
+                                                        <span>下载 ${displayName}</span>
+                                                    </a>
+                                                </div>
+                                            `;
+                                        }).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
+                            
+                            <div class="files-section">
+                                 
+                                <div class="simple-file-list">
+                                    ${filteredAssets.map(asset => {
+                                        const isIPA = asset.name.toLowerCase().includes('.ipa');
+                                        const isPayload = isPayloadFile(asset.name);
+                                        let icon = '📄';
+                                        if (isIPA && !isPayload) {
+                                            icon = '📱';
+                                        } else if (isPayload) {
+                                            icon = '📦';
+                                        }
+                                        return `
+                                            <div class="simple-file-item ${isIPA && !isPayload ? 'ipa-file' : ''}">
+                                                <a href="${FAST_URL}${asset.browser_download_url}" 
+                                                   download="${asset.name}"
+                                                   class="simple-download-link">
+                                                    ${icon} ${asset.name}
+                                                </a>
+                                                <span class="file-size">(${formatBytes(asset.size)})</span>
+                                            </div>
+                                        `;
+                                    }).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                container.innerHTML = html || '<div class="error">没有匹配的文件</div>';
+
+            } catch (error) {
+                container.innerHTML = `
+                    <div class="error-box">
+                        <strong>错误：</strong>${error.message}<br>
+                        
+                    </div>
+                `;
+            }
+        }
+
+        // 字节转换函数保持不变
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // 生成快速切换链接
+        function generateQuickLinks() {
+            return new Promise((resolve) => {
+                const quickLinksDiv = document.getElementById('quick-links');
+                const currentUrl = new URL(window.location.href);
+                
+                // 创建基础URL（保持owner、repo、ext参数）
+                const baseUrl = new URL(window.location.href);
+                baseUrl.searchParams.delete('name'); // 移除name参数作为all链接
+                
+                const links = [
+                    { name: 'ALL', url: baseUrl.toString() },
+                    { name: '任推帮', url: baseUrl.toString() + (baseUrl.search ? '&' : '?') + 'name=rentuibang' },
+                    { name: '海鸽', url: baseUrl.toString() + (baseUrl.search ? '&' : '?') + 'name=haige' },
+                    { name: 'TEMU', url: baseUrl.toString() + (baseUrl.search ? '&' : '?') + 'name=temu' }
+                ];
+                
+                quickLinksDiv.innerHTML = links.map(link => 
+                    `<a href="${link.url}" style="margin-right: 0.10px; color: #0366d6; text-decoration: none; font-size: 12px;">${link.name}</a>`
+                ).join('/');
+                resolve();
+            });
+        }
+
+        // 切换加速状态
+        function toggleAcceleration() {
+            const currentUrl = new URL(window.location.href);
+            const isCurrentlyAccelerated = currentUrl.searchParams.get('accelerated') !== 'false';
+            
+            if (isCurrentlyAccelerated) {
+                currentUrl.searchParams.set('accelerated', 'false');
+            } else {
+                currentUrl.searchParams.set('accelerated', 'true');
+            }
+            
+            // 更新地址栏并刷新页面
+            window.location.href = currentUrl.toString();
+        }
+        
+        // 切换仅下载模式
+        function toggleDownloadOnly() {
+            const currentUrl = new URL(window.location.href);
+            const isCurrentlyDownloadOnly = currentUrl.searchParams.get('download_only') === 'true';
+            
+            if (isCurrentlyDownloadOnly) {
+                currentUrl.searchParams.delete('download_only');
+            } else {
+                currentUrl.searchParams.set('download_only', 'true');
+            }
+            
+            // 更新地址栏并刷新页面
+            window.location.href = currentUrl.toString();
+        }
+        
+        // 复制当前页面地址
+        async function copyCurrentUrl() {
+            try {
+                await navigator.clipboard.writeText(window.location.href);
+                
+                // 显示复制成功提示
+                const copyButton = document.getElementById('copyUrlButton');
+                const originalText = copyButton.innerHTML;
+                copyButton.innerHTML = '<span class="toggle-icon">✅</span><span>已复制</span>';
+                copyButton.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+                
+                setTimeout(() => {
+                    copyButton.innerHTML = originalText;
+                    copyButton.style.background = 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)';
+                }, 2000);
+                
+            } catch (err) {
+                console.error('复制失败:', err);
+                alert('复制失败，请手动复制地址栏');
+            }
+        }
+        
+        // 初始化
+        window.addEventListener('DOMContentLoaded', () => {
+            // 立即显示按钮状态，不等待其他操作
+            updateDownloadOnlyButtonState();
+            
+            // 添加按钮事件监听
+            document.getElementById('toggleButton').addEventListener('click', toggleAcceleration);
+            document.getElementById('downloadOnlyButton').addEventListener('click', toggleDownloadOnly);
+            document.getElementById('copyUrlButton').addEventListener('click', copyCurrentUrl);
+            
+            // 添加二维码点击事件（仅在小屏幕时）
+            if (window.innerWidth <= 768) {
+                document.getElementById('qrcode-container').addEventListener('click', openQRCodeModal);
+            }
+            
+            // 更新加速按钮状态
+            updateAccelerationButtonState();
+            
+            // 并行执行非阻塞操作
+            Promise.all([
+                generateQRCode(),
+                generateQuickLinks(),
+                fetchReleases()
+            ]).catch(console.error);
+            
+            // 12小时后自动刷新页面
+            const refreshInterval = 12 * 60 * 60 * 1000; // 12小时 = 12 * 60 * 60 * 1000毫秒
+            setTimeout(() => {
+                window.location.reload();
+            }, refreshInterval);
+        });
+        
+        // 更新仅下载按钮状态
+        function updateDownloadOnlyButtonState() {
+            const downloadOnlyButton = document.getElementById('downloadOnlyButton');
+            const downloadOnlyText = document.getElementById('downloadOnlyText');
+            const toggleIcon = downloadOnlyButton.querySelector('.toggle-icon');
+            
+            if (DOWNLOAD_ONLY) {
+                downloadOnlyButton.className = 'control-button download-only active';
+                downloadOnlyText.textContent = '显示全部';
+                toggleIcon.textContent = '📋';
+                downloadOnlyButton.title = '当前仅显示待签名包'; // 清除提示
+            } else {
+                downloadOnlyButton.className = 'control-button download-only';
+                downloadOnlyText.textContent = '仅显示下载';
+                toggleIcon.textContent = '📥';
+                downloadOnlyButton.title = '切换发给客户的签名包链接'; // 添加提示
+            }
+        }
+        
+        // 更新加速按钮状态
+        function updateAccelerationButtonState() {
+            const toggleButton = document.getElementById('toggleButton');
+            const toggleText = document.getElementById('toggleText');
+            const toggleIcon = toggleButton.querySelector('.toggle-icon');
+            
+            if (isAccelerated) {
+                toggleButton.className = 'toggle-button accelerated';
+                toggleText.textContent = '已加速';
+                toggleIcon.textContent = '🚀';
+            } else {
+                toggleButton.className = 'toggle-button not-accelerated';
+                toggleText.textContent = '未加速';
+                toggleIcon.textContent = '🐌';
+            }
+        }
+        
+        // 打开二维码模态框
+        function openQRCodeModal() {
+            const modal = document.getElementById('qrcodeModal');
+            modal.classList.add('show');
+            document.body.style.overflow = 'hidden'; // 防止背景滚动
+        }
+        
+        // 关闭二维码模态框
+        function closeQRCodeModal() {
+            const modal = document.getElementById('qrcodeModal');
+            modal.classList.remove('show');
+            document.body.style.overflow = ''; // 恢复背景滚动
+        }
+    </script>
+    
+    <!-- 页面标记 -->
+    <div style="position: fixed; bottom: 10px; right: 10px; font-size: 10px; color: #6b7280; opacity: 0.6; pointer-events: none; z-index: 9999; font-family: monospace;">---08050008----</div>
+    
+    <!-- 快速切换链接 -->
+    <div id="quick-links" style="position: fixed; bottom: 10px; left: 20px; z-index: 9999;"></div>
+</body>
+
+<!-- 自定义样式 -->
+<style>
+            .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px 32px;
+            margin: 8px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            min-width: 140px;
+            font-size: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        color: white;
+        box-shadow: 0 8px 25px -8px rgba(59, 130, 246, 0.5);
+        border: 2px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-secondary {
+        background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+        color: white;
+        box-shadow: 0 8px 25px -8px rgba(249, 115, 22, 0.5);
+        border: 2px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .btn:hover {
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn:active {
+        transform: translateY(-1px) scale(1.01);
+        box-shadow: 0 8px 25px -8px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn i {
+        margin-right: 10px;
+        font-size: 1.1em;
+    }
+
+    .download-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        padding: 24px;
+    }
+</style>
+
+</html>
