@@ -639,26 +639,94 @@
             // 构造plist文件名（与ipa文件同名，扩展名改为plist）
             const plistName = baseName + '.plist';
             
-            // 在同一个release的assets中查找对应的plist文件
-            const plistAsset = releaseAssets.find(asset => 
-                asset.name.toLowerCase() === plistName.toLowerCase()
-            );
+            // 强制使用动态生成的plist，不查找现有plist文件
+            console.log('使用动态生成plist:', displayName);
+            return generateDynamicInstallLink(currentAsset, displayName);
+        }
+        
+        // 动态生成安装链接的函数
+        function generateDynamicInstallLink(asset, displayName) {
+            console.log('生成动态安装链接:', displayName, asset.name);
             
-            if (!plistAsset) {
-                // 如果找不到对应的plist文件，使用动态生成的plist
-                return generateDynamicInstallLink(currentAsset, displayName);
+            // 根据应用名称获取包名
+            let bundleId = 'com.xinbida.default';
+            if (displayName === '任推帮') {
+                bundleId = 'com.xinbida.rentuibang';
+            } else if (displayName === '海鸽') {
+                bundleId = 'com.xinbida.shanxin';
+            } else if (displayName === 'TEMU') {
+                bundleId = 'com.xinbida.rentuibang'; // TEMU使用相同的包名
             }
             
-            // 构造plist文件URL（使用GitHub releases的下载链接）
-            const plistUrl = FAST_URL + plistAsset.browser_download_url + (isAccelerated ? FAST_TAIL : '');
+            console.log('使用的包名:', bundleId);
+            
+            // 构造 IPA 下载地址（适配加速，但不添加 .plist 后缀）
+            const ipaUrl = FAST_URL + asset.browser_download_url;
+            
+            // 构造 plist 内容
+            const plistContent = `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>items</key>
+    <array>
+        <dict>
+            <key>assets</key>
+            <array>
+                <!-- 1. 指向 IPA 文件的下载链接 -->
+                <dict>
+                    <key>kind</key>
+                    <string>software-package</string>
+                    <key>url</key>
+                    <string>${ipaUrl}</string>
+                </dict>
+                <!-- 可选：应用图标（57x57 或 512x512） -->
+                <dict>
+                    <key>kind</key>
+                    <string>display-image</string>
+                    <key>url</key>
+                    <string>https://yourdomain.com/icon.png</string>
+                </dict>
+            </array>
+            <!-- 2. 应用元数据 -->
+            <key>metadata</key>
+            <dict>
+                <key>bundle-identifier</key>
+                <string>${bundleId}</string>
+                <key>bundle-version</key>
+                <string>1.0.0</string>
+                <key>kind</key>
+                <string>software</string>
+                <key>title</key>
+                <string>${displayName}</string>
+            </dict>
+        </dict>
+    </array>
+</dict>
+</plist>`;
+
+            // 构造 data URL (使用 URL 编码)
+            const dataUrl = `data:text/xml;charset=utf-8,${encodeURIComponent(plistContent)}`;
+            
+            // 构造安装链接
+            const installUrl = `itms-services://?action=download-manifest&url=${encodeURIComponent(dataUrl)}`;
             
             return `
-                <a href="itms-services://?action=download-manifest&url=${encodeURIComponent(plistUrl)}" 
-                   class="btn btn-primary" data-mode="all">
-                    <i class="fa fa-flask"></i>
-                    <span>安装 ${displayName}</span>
-                    <span hidden>${plistUrl}</span>
-                </a>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <a href="${installUrl}" 
+                       class="btn btn-primary" data-mode="all">
+                        <i class="fa fa-flask"></i>
+                        <span>安装 ${displayName}</span>
+                        <span hidden>动态生成</span>
+                    </a>
+                    <a href="${dataUrl}" 
+                       download="${displayName}.plist"
+                       class="btn btn-secondary" 
+                       style="padding: 8px 16px; font-size: 0.9rem; min-width: auto;">
+                        <i class="fa fa-download"></i>
+                        <span>下载 plist</span>
+                    </a>
+                </div>
             `;
         }
 
