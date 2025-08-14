@@ -5,11 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Releases | 版本发布</title>
-    <!-- 禁止缓存的meta标签 -->
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0, private">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    <meta http-equiv="Last-Modified" content="0">
+    <!-- 设置1分钟缓存的meta标签 -->
+    <meta http-equiv="Cache-Control" content="public, max-age=60">
+    <meta http-equiv="Expires" content="60">
     <!-- 引入 QRCode.js -->
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <style>
@@ -662,6 +660,8 @@
             `;
         }
 
+
+
         async function fetchReleases() {
             const container = document.getElementById('release-container');
 
@@ -671,18 +671,19 @@
                     throw new Error('缺少必要参数：owner 和 repo');
                 }
 
+
+
                 // 立即显示加载状态
                 container.innerHTML = '<div class="loading">加载中...</div>';
 
-                // 添加时间戳防止API缓存
-                const timestamp = Math.floor(new Date().getTime() / 60000); // 分钟级别的时间戳
-                const API_URL = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases?_t=${timestamp}`;
+                // 移除时间戳，利用浏览器和GitHub API的缓存
+                const API_URL = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases`;
                 // 多个备用 API 地址
                 const API_URLS = [
-                `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases?_t=${timestamp}`,
-                `https://ghfast.top/https://raw.githubusercontent.com/tsdaodao/tsddipa/refs/heads/main/tsdd/releases3.0.1.json?_t=${timestamp}`,
+                `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases`,
+                `https://ghfast.top/https://raw.githubusercontent.com/tsdaodao/tsddipa/refs/heads/main/tsdd/releases3.0.1.json`,
 
-                `https://tsdaodao.github.io/tsddipa/tsdd/releases3.0.1.json?_t=${timestamp}`,
+                `https://tsdaodao.github.io/tsddipa/tsdd/releases3.0.1.json`,
                 
                 ];
                 
@@ -694,7 +695,13 @@
                 for (let i = 0; i < API_URLS.length; i++) {
                     try {
                         console.log(`尝试 API ${i + 1}: ${API_URLS[i]}`);
-                        response = await fetch(API_URLS[i]);
+                        response = await fetch(API_URLS[i], {
+                            cache: 'default' // 使用浏览器默认缓存策略
+                        });
+                        
+                        // 检查是否来自缓存
+                        console.log(`API ${i + 1} 响应状态:`, response.status);
+                        console.log(`API ${i + 1} 缓存状态:`, response.headers.get('x-cache') || 'unknown');
                         if (API_URLS[i].includes('api.github.com')) {
                                 const limit = response.headers.get('x-ratelimit-limit');
                                 const remaining = response.headers.get('x-ratelimit-remaining');
@@ -714,8 +721,16 @@
                             console.log(`API ${i + 1} 成功`);
                             
                             // 检查是否是GitHub API并获取速率限制信息
+                            let releases = await response.json();
                             
+                            // 如果返回空数组，继续尝试下一个API
+                            if (Array.isArray(releases) && releases.length === 0) {
+                                console.log(`API ${i + 1} 返回空数组，继续尝试下一个API`);
+                                continue;
+                            }
                             
+                            // 保存成功获取的数据
+                            window.successfulReleases = releases;
                             break;
                         } else {
                             // 获取错误信息
@@ -753,7 +768,8 @@
                     }
                 }
 
-                const releases = await response.json();
+                // 使用之前保存的数据，避免重复调用response.json()
+                const releases = window.successfulReleases || [];
 
                 if (!Array.isArray(releases) || releases.length === 0) {
                     container.innerHTML = '<div class="error">该仓库暂无 Release</div>';
