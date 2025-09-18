@@ -663,53 +663,11 @@
             // 构造 IPA 下载地址（适配加速，但不添加 .plist 后缀）
             const ipaUrl = FAST_URL + asset.browser_download_url;
             
-            // 构造 plist 内容
-            const plistContent = `<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-    <key>items</key>
-    <array>
-        <dict>
-            <key>assets</key>
-            <array>
-                <!-- 1. 指向 IPA 文件的下载链接 -->
-                <dict>
-                    <key>kind</key>
-                    <string>software-package</string>
-                    <key>url</key>
-                    <string>${ipaUrl}</string>
-                </dict>
-                <!-- 可选：应用图标（57x57 或 512x512） -->
-                <dict>
-                    <key>kind</key>
-                    <string>display-image</string>
-                    <key>url</key>
-                    <string>https://yourdomain.com/icon.png</string>
-                </dict>
-            </array>
-            <!-- 2. 应用元数据 -->
-            <key>metadata</key>
-            <dict>
-                <key>bundle-identifier</key>
-                <string>${bundleId}</string>
-                <key>bundle-version</key>
-                <string>1.0.0</string>
-                <key>kind</key>
-                <string>software</string>
-                <key>title</key>
-                <string>${displayName}</string>
-            </dict>
-        </dict>
-    </array>
-</dict>
-</plist>`;
-
-            // 构造 data URL (使用 URL 编码)
-            const dataUrl = `data:text/xml;charset=utf-8,${encodeURIComponent(plistContent)}`;
+            // 构造 plist 生成器 URL
+            const plistGeneratorUrl = `./plist-generator.html?ipa_url=${encodeURIComponent(ipaUrl)}&bundle_id=${encodeURIComponent(bundleId)}&title=${encodeURIComponent(displayName)}&version=1.0.0`;
             
             // 构造安装链接
-            const installUrl = `itms-services://?action=download-manifest&url=${encodeURIComponent(dataUrl)}`;
+            const installUrl = `itms-services://?action=download-manifest&url=${encodeURIComponent(plistGeneratorUrl)}`;
             
             return `
                 <div style="display: flex; gap: 10px; align-items: center;">
@@ -719,12 +677,12 @@
                         <span>安装 ${displayName}</span>
                         <span hidden>动态生成</span>
                     </a>
-                    <a href="${dataUrl}" 
-                       download="${displayName}.plist"
+                    <a href="${plistGeneratorUrl}" 
+                       target="_blank"
                        class="btn btn-secondary" 
                        style="padding: 8px 16px; font-size: 0.9rem; min-width: auto;">
-                        <i class="fa fa-download"></i>
-                        <span>下载 plist</span>
+                        <i class="fa fa-external-link"></i>
+                        <span>查看 plist</span>
                     </a>
                 </div>
             `;

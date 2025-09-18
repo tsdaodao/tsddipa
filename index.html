@@ -23,6 +23,7 @@
             margin: 1rem auto;
             padding: 0 1rem;
             padding-left: 200px; /* 为左侧固定的二维码留出空间 */
+            padding-bottom: 120px; /* 为右下角悬浮按钮留出空间 */
         }
 
         #qrcode-container {
@@ -370,41 +371,43 @@
         }
         
         .toggle-button, .control-button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
             color: white;
             border: none;
-            padding: 10px 20px;
-            border-radius: 25px;
+            padding: 8px 16px;
+            border-radius: 20px;
             cursor: pointer;
-            font-size: 12px;
-            font-weight: 600;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            font-size: 11px;
+            font-weight: 500;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             white-space: nowrap;
+            opacity: 0.7;
         }
         
         .toggle-button:hover, .control-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            opacity: 1;
         }
         
         .toggle-button.accelerated {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%);
         }
         
         .toggle-button.not-accelerated {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            background: linear-gradient(135deg, #94a3b8 0%, #64748b 100%);
         }
         
         .control-button.download-only {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
         }
         
         .control-button.copy-url {
-            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
         }
         
         .toggle-icon {
@@ -416,6 +419,7 @@
             body {
                 padding-left: 1rem; /* 小屏幕时恢复正常边距 */
                 padding-top: 0.5rem; /* 减少顶部间距 */
+                padding-bottom: 100px; /* 小屏幕时减少底部空间 */
             }
             
             #qrcode-container {
@@ -600,6 +604,9 @@
             } else if (lowerName.includes('temupayload')) {
                 return 'TEMU待签名包';
             }
+            else if (lowerName.includes('dayunchangliaopayload')) {
+                return '达运畅聊待签名包';
+            }
             // 如果没有匹配，返回原文件名（不含扩展名）
             return fileName.substring(0, fileName.lastIndexOf('.')) + '待签名包';
         }
@@ -613,6 +620,8 @@
                 return '任推帮';
             } else if (lowerName.includes('temu')) {
                 return 'TEMU';
+            } else if (lowerName.includes('dayunchangliao')) {
+                return '达运畅聊';
             }
             // 如果没有匹配，返回原文件名（不含扩展名）
             return fileName.substring(0, fileName.lastIndexOf('.'));
@@ -713,7 +722,7 @@
                                         remaining: parseInt(remaining),
                                         reset: reset ? new Date(parseInt(reset) * 1000) : null
                                     };
-                                    console.log('GitHub API 速率限制信息:', rateLimitInfo);
+                                    console.log('GitHub API 频率限制信息:', rateLimitInfo);
                                 }
                             }
                         // 检查响应状态
@@ -810,7 +819,8 @@
                             
                             ${ipaAssets.length > 0 && !DOWNLOAD_ONLY ? `
                                 <div class="install-section">
-                                    
+                                                                            <p style="font-size: 12px; color: #6b7280; margin: 8px 0 0px 0; text-align: center;">点击下方按钮直接安装到设备（仅支持已注册到的设备）</p>
+
                                     <div class="install-buttons">
                                         <h5 >📱安装包 （内测版）</h5> 
                                         ${ipaAssets.map(asset => {
@@ -827,7 +837,10 @@
                             
                             ${payloadAssets.length > 0 ? `
                                 <div class="install-section">
+                                        <p style="font-size: 12px; color: #92400e; margin: 8px 0 0px 0; text-align: center;">下载后需要重新签名才能对外发布安装</p>
+
                                     <div class="install-buttons" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid #f59e0b; box-shadow: 0 4px 20px rgba(245, 158, 11, 0.3);">
+                                       
                                         <h5 style="color: #92400e;">📦待签名包</h5> 
                                         ${payloadAssets.map(asset => {
                                             const displayName = getPayloadDisplayName(asset.name);
@@ -921,12 +934,14 @@
                     { name: 'ALL', url: baseUrl.toString() },
                     { name: '任推帮', url: baseUrl.toString() + (baseUrl.search ? '&' : '?') + 'name=rentuibang' },
                     { name: '海鸽', url: baseUrl.toString() + (baseUrl.search ? '&' : '?') + 'name=haige' },
-                    { name: 'TEMU', url: baseUrl.toString() + (baseUrl.search ? '&' : '?') + 'name=temu' }
+                    // { name: 'TEMU', url: baseUrl.toString() + (baseUrl.search ? '&' : '?') + 'name=temu' },
+                    { name: '达运畅聊', url: baseUrl.toString() + (baseUrl.search ? '&' : '?') + 'name=dayunchangliao' }
+
                 ];
                 
                 quickLinksDiv.innerHTML = links.map(link => 
-                    `<a href="${link.url}" style="margin-right: 0.10px; color: #0366d6; text-decoration: none; font-size: 12px;">${link.name}</a>`
-                ).join('/');
+                    `<a href="${link.url}" style="margin: 0 8px; color: #0366d6; text-decoration: none; font-size: 14px; padding: 4px 8px; border-radius: 4px; transition: all 0.2s ease;" onmouseover="this.style.background='#e3f2fd'; this.style.color='#1976d2';" onmouseout="this.style.background='transparent'; this.style.color='#0366d6';">${link.name}</a>`
+                ).join(' | ');
                 resolve();
             });
         }
@@ -1067,10 +1082,10 @@
     </script>
     
     <!-- 页面标记 -->
-    <div style="position: fixed; bottom: 10px; right: 10px; font-size: 10px; color: #6b7280; opacity: 0.6; pointer-events: none; z-index: 9999; font-family: monospace;">---08050008----</div>
+    <div style="position: fixed; bottom: 10px; right: 10px; font-size: 10px; color: #6b7280; opacity: 0.1; pointer-events: none; z-index: 9999; font-family: monospace;">---09180008----</div>
     
     <!-- 快速切换链接 -->
-    <div id="quick-links" style="position: fixed; bottom: 10px; left: 20px; z-index: 9999;"></div>
+    <div id="quick-links" style="margin: 20px 0; text-align: center; padding: 10px; background: #f8f9fa; border-radius: 8px;"></div>
 </body>
 
 <!-- 自定义样式 -->
