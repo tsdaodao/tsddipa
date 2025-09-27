@@ -622,6 +622,8 @@
                 return 'TEMU';
             } else if (lowerName.includes('dayunchangliao')) {
                 return '达运畅聊';
+            }else if (lowerName.includes('hexintongxun')) {
+                return '何信通讯';
             }
             // 如果没有匹配，返回原文件名（不含扩展名）
             return fileName.substring(0, fileName.lastIndexOf('.'));
@@ -936,7 +938,8 @@
                     { name: '任推帮', url: baseUrl.toString() + (baseUrl.search ? '&' : '?') + 'name=rentuibang' },
                     { name: '海鸽', url: baseUrl.toString() + (baseUrl.search ? '&' : '?') + 'name=haige' },
                     // { name: 'TEMU', url: baseUrl.toString() + (baseUrl.search ? '&' : '?') + 'name=temu' },
-                    { name: '达运畅聊', url: baseUrl.toString() + (baseUrl.search ? '&' : '?') + 'name=dayunchangliao' }
+                    { name: '达运畅聊', url: baseUrl.toString() + (baseUrl.search ? '&' : '?') + 'name=dayunchangliao' },
+                    { name: '何信通讯', url: baseUrl.toString() + (baseUrl.search ? '&' : '?') + 'name=hexintongxun' }
 
                 ];
                 
