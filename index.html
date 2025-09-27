@@ -540,7 +540,7 @@
                 
                 // 根据屏幕尺寸决定二维码大小
                 const isSmallScreen = window.innerWidth <= 768;
-                const mainQRSize = isSmallScreen ? 60 : 150; // 小屏幕60px，大屏幕150px
+                const mainQRSize = isSmallScreen ? 50 : 120; // 小屏幕60px，大屏幕150px
                 
                 // 生成主二维码
                 new QRCode(document.getElementById("qrcode-container"), {
@@ -653,7 +653,8 @@
             
             if (!plistAsset) {
                 // 如果找不到对应的plist文件，使用动态生成的plist
-                return generateDynamicInstallLink(currentAsset, displayName);
+               // return generateDynamicInstallLink(currentAsset, displayName);
+               return "";
             }
             
             // 构造plist文件URL（使用GitHub releases的下载链接）
@@ -1009,9 +1010,9 @@
             document.getElementById('copyUrlButton').addEventListener('click', copyCurrentUrl);
             
             // 添加二维码点击事件（仅在小屏幕时）
-            if (window.innerWidth <= 768) {
+            // if (window.innerWidth <= 768) {
                 document.getElementById('qrcode-container').addEventListener('click', openQRCodeModal);
-            }
+            // }
             
             // 更新加速按钮状态
             updateAccelerationButtonState();
