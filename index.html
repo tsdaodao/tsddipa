@@ -598,17 +598,20 @@
         function getPayloadDisplayName(fileName) {
             const lowerName = fileName.toLowerCase();
             if (lowerName.includes('rentuibangpayload')) {
-                return '任推帮待签名包';
+                return '任推帮 待签名包';
             } else if (lowerName.includes('haigepayload')) {
-                return '海鸽待签名包';
+                return '海鸽 待签名包';
             } else if (lowerName.includes('temupayload')) {
-                return 'TEMU待签名包';
+                return 'TEMU 待签名包';
             }
             else if (lowerName.includes('dayunchangliaopayload')) {
-                return '达运畅聊待签名包';
+                return '达运畅聊 待签名包';
+            }
+            else if (lowerName.includes('hexintongxunpayload')) {
+                return '何信通讯 待签名包';
             }
             // 如果没有匹配，返回原文件名（不含扩展名）
-            return fileName.substring(0, fileName.lastIndexOf('.')) + '待签名包';
+            return fileName.substring(0, fileName.lastIndexOf('.')) + ' 待签名包';
         }
 
         // 获取显示名称
