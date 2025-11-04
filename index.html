@@ -525,6 +525,7 @@
         const REPO_NAME = urlParams.get('repo') || 'tsddipa';
         const FILE_EXT = (urlParams.get('ext') || '*').toLowerCase();
         const FILE_NAME = (urlParams.get('name') || '').toLowerCase(); // 新增文件名过滤参数
+        const RELEASE_FILTER = (urlParams.get('release') || '').toLowerCase(); // release 筛选参数
         const DOWNLOAD_ONLY = urlParams.get('download_only') === 'true'; // 仅下载模式参数
         const ACCELERATED = urlParams.get('accelerated') !== 'false'; // 加速状态参数，默认为true
 
@@ -616,6 +617,10 @@
                 return '何信通讯';
             }else if (lowerName.includes('shunda')) {
                 return '顺达畅聊';
+            }else if (lowerName.includes('xuyun')) {
+                return '旭运';
+            }else if (lowerName.includes('xinyu')) {
+                return '信宇';
             }
             // 如果没有匹配，返回原文件名（不含扩展名）
             return fileName.substring(0, fileName.lastIndexOf('.'));
@@ -792,6 +797,12 @@
                 releases.sort((a, b) => new Date(b.published_at) - new Date(a.published_at));
 
                 releases.forEach(release => {
+                    // release 筛选
+                    if (RELEASE_FILTER && !release.tag_name.toLowerCase().includes(RELEASE_FILTER) && 
+                        !(release.name && release.name.toLowerCase().includes(RELEASE_FILTER))) {
+                        return;
+                    }
+                    
                     const filteredAssets = filterAssets(release.assets);
                     if (filteredAssets.length === 0) return;
 
@@ -931,7 +942,9 @@
                     { name: '海鸽', url: baseUrl.toString() + (baseUrl.search ? '&' : '?') + 'name=haige' },
                     // { name: 'TEMU', url: baseUrl.toString() + (baseUrl.search ? '&' : '?') + 'name=temu' },
                     { name: '达运畅聊', url: baseUrl.toString() + (baseUrl.search ? '&' : '?') + 'name=dayunchangliao' },
-                    { name: '何信通讯', url: baseUrl.toString() + (baseUrl.search ? '&' : '?') + 'name=hexintongxun' }
+                    { name: '何信通讯', url: baseUrl.toString() + (baseUrl.search ? '&' : '?') + 'name=hexintongxun' },
+                    { name: '旭运', url: baseUrl.toString() + (baseUrl.search ? '&' : '?') + 'name=xuyun' },
+                    { name: '信宇', url: baseUrl.toString() + (baseUrl.search ? '&' : '?') + 'name=xinyu' }
 
                 ];
                 
