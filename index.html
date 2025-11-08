@@ -338,7 +338,7 @@
             display: flex;
             flex-wrap: wrap;
             gap: 0.6rem;
-            justify-content: center;
+            justify-content: space-evenly;
             align-items: center;
             padding: 0.6rem;
             padding-top: 1.8rem;
@@ -507,11 +507,9 @@
             }
             
             .toggle-container {
-                position: relative;
-                top: auto;
-                right: auto;
-                margin: 0.5rem 0;
-                text-align: center;
+                position: fixed;
+                top: 20px;
+                right: 20px;
             }
             
             .control-buttons {
@@ -723,7 +721,7 @@
             const showTimeClass = isAssetOlderThanRelease(assetTime, publishedAt) ? ' show-time' : '';
             return `
                 <a href="itms-services://?action=download-manifest&url=${encodeURIComponent(plistUrl)}" 
-                   class="btn btn-primary${showTimeClass}" data-mode="all" data-time="${getRelativeTime(publishedAt)}" style="display: flex; justify-content: center; align-items: center; position: relative; padding-bottom: 14px;">
+                   class="btn btn-primary${showTimeClass}" data-mode="all" data-time="${getRelativeTime(assetTime)}" style="display: flex; justify-content: center; align-items: center; position: relative; padding-bottom: 14px;">
                     <span style="position: absolute; left: 10px; font-size: 0.8em; opacity: 0.6;">安装</span>
                     <span style="font-weight: 600; margin-left: 8px;">${displayName}</span>
                     <span style="position: absolute; bottom: 2px; right: 5px; font-size: 0.55em; opacity: 0.5;">APP</span>
@@ -889,7 +887,7 @@
                                 <div class="install-section">
                                     <div class="install-buttons">
                                         <h5>📱安装包 （内测版）</h5>
-                                        <p style="position: absolute; top: 6px; right: 100px; font-size: 0.65rem; color: #6b7280; margin: 0; opacity: 0.7; white-space: nowrap;">仅开发者设备可安装测试ß</p> 
+                                        <p style="position: absolute; top: 6px; right: 30px; font-size: 0.65rem; color: #6b7280; margin: 0; opacity: 0.7; white-space: nowrap;">仅开发者设备可安装测试</p> 
                                         ${ipaAssets.map(asset => {
                                             const buttonHtml = checkurlshowbuttonhtml(asset.name, release.assets, asset, release.published_at);
                                             return `
@@ -906,7 +904,7 @@
                                 <div class="install-section">
                                     <div class="install-buttons" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid #f59e0b; box-shadow: 0 4px 20px rgba(245, 158, 11, 0.3);">
                                         <h5 style="color: #92400e;">📦待签名包</h5>
-                                        <p style="position: absolute; top: 6px; right: 100px; font-size: 0.65rem; color: #92400e; margin: 0; opacity: 0.7; white-space: nowrap;">需重新签名后方可使用</p> 
+                                        <p style="position: absolute; top: 6px; right: 30px; font-size: 0.65rem; color: #92400e; margin: 0; opacity: 0.7; white-space: nowrap;">需重新签名后方可使用</p> 
                                         ${payloadAssets.map(asset => {
                                             const displayName = getPayloadDisplayName(asset.name);
                                             const assetTime = asset.updated_at || asset.created_at;
@@ -915,7 +913,7 @@
                                                 <div class="install-button-wrapper">
                                                     <a href="${FAST_URL}${asset.browser_download_url}" 
                                                        download="${asset.name}"
-                                                       class="btn btn-secondary${showTimeClass}" data-time="${getRelativeTime(release.published_at)}" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); box-shadow: 0 8px 25px -8px rgba(245, 158, 11, 0.5); display: flex; justify-content: center; align-items: center; position: relative; padding-bottom: 14px;">
+                                                       class="btn btn-secondary${showTimeClass}" data-time="${getRelativeTime(assetTime)}" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); box-shadow: 0 8px 25px -8px rgba(245, 158, 11, 0.5); display: flex; justify-content: center; align-items: center; position: relative; padding-bottom: 14px;">
                                                         <span style="position: absolute; left: 10px; font-size: 0.8em; opacity: 0.6;">下载</span>
                                                         <span style="font-weight: 600; margin-left: 8px;">${displayName}</span>
                                                         <span style="position: absolute; bottom: 2px; right: 5px; font-size: 0.55em; opacity: 0.5;">待签名包</span>
@@ -1047,7 +1045,7 @@
                 ];
                 
                 quickLinksDiv.innerHTML = links.map(link => 
-                    `<a href="${link.url}" style="margin: 0 8px; color: #0366d6; text-decoration: none; font-size: 14px; padding: 4px 8px; border-radius: 4px; transition: all 0.2s ease;" onmouseover="this.style.background='#e3f2fd'; this.style.color='#1976d2';" onmouseout="this.style.background='transparent'; this.style.color='#0366d6';">${link.name}</a>`
+                    `<a href="${link.url}" style="margin: 0 1px; color: #0366d6; text-decoration: none; font-size: 14px; padding: 4px 8px; border-radius: 4px; transition: all 0.2s ease;" onmouseover="this.style.background='#e3f2fd'; this.style.color='#1976d2';" onmouseout="this.style.background='transparent'; this.style.color='#0366d6';">${link.name}</a>`
                 ).join(' | ');
                 resolve();
             });
