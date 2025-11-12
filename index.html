@@ -688,6 +688,10 @@
                 return '旭运';
             }else if (lowerName.includes('xinyu')) {
                 return '信宇';
+            }else if (lowerName.includes('nanqiang')) {
+                return '南强通信';
+            }else if (lowerName.includes('xiongmao')) {
+                return '熊猫简单聊';
             }
             // 如果没有匹配，返回原文件名（不含扩展名）
             return fileName.substring(0, fileName.lastIndexOf('.'));
@@ -1052,8 +1056,11 @@
                     // { name: 'TEMU', url: baseUrl.toString() + (baseUrl.search ? '&' : '?') + 'name=temu' },
                     { name: '达运畅聊', url: baseUrl.toString() + (baseUrl.search ? '&' : '?') + 'name=dayunchangliao' },
                     { name: '何信通讯', url: baseUrl.toString() + (baseUrl.search ? '&' : '?') + 'name=hexintongxun' },
+                    { name: '顺达畅聊', url: baseUrl.toString() + (baseUrl.search ? '&' : '?') + 'name=shunda' },
                     { name: '旭运', url: baseUrl.toString() + (baseUrl.search ? '&' : '?') + 'name=xuyun' },
-                    { name: '信宇', url: baseUrl.toString() + (baseUrl.search ? '&' : '?') + 'name=xinyu' }
+                    { name: '信宇', url: baseUrl.toString() + (baseUrl.search ? '&' : '?') + 'name=xinyu' },
+                    { name: '南强通信', url: baseUrl.toString() + (baseUrl.search ? '&' : '?') + 'name=nanqiang' },
+                    { name: '简单聊', url: baseUrl.toString() + (baseUrl.search ? '&' : '?') + 'name=xiongmao' }
 
                 ];
                 
