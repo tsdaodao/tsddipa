@@ -19,33 +19,34 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            max-width: 1000px;
+            max-width: 1200px;
             margin: 1rem auto;
             padding: 0 1rem;
-            padding-left: 200px; /* 为左侧固定的二维码留出空间 */
-            padding-bottom: 120px; /* 为右下角悬浮按钮留出空间 */
+            padding-bottom: 120px;
         }
 
         #qrcode-container {
             position: fixed;
-            top: 20px;
+            bottom: 20px;
             left: 20px;
             z-index: 1000;
             background: white;
-            padding: 15px;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-            border: 2px solid #e5e7eb;
+            padding: 8px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e5e7eb;
             transition: all 0.3s ease;
             text-align: center;
             display: flex;
             flex-direction: column;
             align-items: center;
+            opacity: 0.85;
         }
         
         #qrcode-container:hover {
-            transform: scale(1.05);
+            transform: scale(1.1);
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+            opacity: 1;
         }
         
         /* 二维码放大模态框 */
@@ -91,16 +92,16 @@
         }
         
         #qrcode-container::before {
-            content: "📱 扫码安装";
+            content: "📱 扫码";
             display: block;
             text-align: center;
-            font-size: 12px;
+            font-size: 10px;
             font-weight: 600;
             color: #374151;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
             background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
-            padding: 4px 8px;
-            border-radius: 6px;
+            padding: 2px 6px;
+            border-radius: 4px;
         }
 
         .loading {
@@ -114,9 +115,9 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 10px;
+            padding: 4px;
             border: 1px solid var(--border-color);
-            border-radius: 8px;
+            border-radius: 6px;
         }
         
         #qrcode img {
@@ -135,30 +136,31 @@
             background: white;
             border: 1px solid var(--border-color);
             border-radius: 6px;
-            padding: 0.8rem;
-            margin-bottom: 1rem;
+            padding: 0.6rem;
+            margin-bottom: 0.8rem;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
             position: relative;
         }
         
         .release-card h2 {
-            margin: 0 0 0.5rem 0;
-            font-size: 1.3rem;
+            margin: 0 0 0.3rem 0;
+            font-size: 1.1rem;
             padding-right: 120px;
+            line-height: 1.3;
         }
         
         .release-date {
             position: absolute;
-            top: 0.8rem;
-            right: 0.8rem;
-            font-size: 0.85rem;
+            top: 0.6rem;
+            right: 0.6rem;
+            font-size: 0.75rem;
             color: #4b5563;
             text-align: right;
-            line-height: 1.3;
+            line-height: 1.2;
             font-weight: 500;
             background: #f3f4f6;
-            padding: 5px 8px;
-            border-radius: 6px;
+            padding: 4px 6px;
+            border-radius: 4px;
         }
 
         .filter-info {
@@ -185,14 +187,10 @@
         }
         
         .release-description {
-            /* background: #f8f9fa; */
             border-left: 4px solid var(--primary-color);
-             padding: 0.6rem;
-           /* margin: 1rem 0;
-            border-radius: 0 4px 4px 0;
-            white-space: pre-wrap;
-            font-size: 0.9em;
-            color: #586069; */
+            padding: 0.3rem 0.5rem;
+            font-size: 0.85rem;
+            line-height: 1.4;
         }
         
         .assets-container {
@@ -272,12 +270,19 @@
         }
         
         /* 新增样式 */
+        .install-sections-wrapper {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
         .install-section, .files-section {
             margin-top: 1rem;
         }
         
         .install-section {
             overflow: visible;
+            flex: 1;
         }
         
         .install-section h3, .files-section h3 {
@@ -291,6 +296,12 @@
         .install-section h3 {
             color: #2563eb;
             border-bottom-color: #2563eb;
+        }
+        
+        @media (max-width: 768px) {
+            .install-sections-wrapper {
+                flex-direction: column;
+            }
         }
         
         .files-section h3 {
@@ -338,8 +349,8 @@
             display: flex;
             flex-wrap: wrap;
             gap: 0.6rem;
-            justify-content: space-evenly;
-            align-items: center;
+            justify-content: flex-start;
+            align-items: stretch;
             padding: 0.6rem;
             padding-top: 1.8rem;
             background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
@@ -362,9 +373,8 @@
         }
         
         .install-button-wrapper {
+            flex: 0 0 auto;
             display: flex;
-            align-items: center;
-            justify-content: center;
         }
         
         .simple-file-list {
@@ -477,9 +487,8 @@
         /* 响应式设计 */
         @media (max-width: 768px) {
             body {
-                padding-left: 1rem; /* 小屏幕时恢复正常边距 */
-                padding-top: 0.5rem; /* 减少顶部间距 */
-                padding-bottom: 100px; /* 小屏幕时减少底部空间 */
+                padding-top: 0.5rem;
+                padding-bottom: 100px;
             }
             
             #qrcode-container {
@@ -599,7 +608,7 @@
                 
                 // 根据屏幕尺寸决定二维码大小
                 const isSmallScreen = window.innerWidth <= 768;
-                const mainQRSize = isSmallScreen ? 50 : 120; // 小屏幕60px，大屏幕150px
+                const mainQRSize = isSmallScreen ? 50 : 100;
                 
                 // 生成主二维码
                 new QRCode(document.getElementById("qrcode-container"), {
@@ -883,45 +892,49 @@
                                 <span hidden >版本号：${release.tag_name}</span>
                                     ${release.body ? `<div class="release-description---">${release.body}</div>` : ''}
                             </div>
-                            ${ipaAssets.length > 0 && !DOWNLOAD_ONLY ? `
-                                <div class="install-section">
-                                    <div class="install-buttons">
-                                        <h5>📱安装包 （内测版）</h5>
-                                        <p style="position: absolute; top: 6px; right: 30px; font-size: 0.65rem; color: #6b7280; margin: 0; opacity: 0.7; white-space: nowrap;">仅开发者设备可安装测试</p> 
-                                        ${ipaAssets.map(asset => {
-                                            const buttonHtml = checkurlshowbuttonhtml(asset.name, release.assets, asset, release.published_at);
-                                            return `
-                                                <div class="install-button-wrapper">
-                                                    ${buttonHtml}
-                                                </div>
-                                            `;
-                                        }).join('')}
-                                    </div>
-                                </div>
-                            ` : ''}
-                            
-                            ${payloadAssets.length > 0 ? `
-                                <div class="install-section">
-                                    <div class="install-buttons" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid #f59e0b; box-shadow: 0 4px 20px rgba(245, 158, 11, 0.3);">
-                                        <h5 style="color: #92400e;">📦待签名包</h5>
-                                        <p style="position: absolute; top: 6px; right: 30px; font-size: 0.65rem; color: #92400e; margin: 0; opacity: 0.7; white-space: nowrap;">需重新签名后方可使用</p> 
-                                        ${payloadAssets.map(asset => {
-                                            const displayName = getPayloadDisplayName(asset.name);
-                                            const assetTime = asset.updated_at || asset.created_at;
-                                            const showTimeClass = isAssetOlderThanRelease(assetTime, release.published_at) ? ' show-time' : '';
-                                            return `
-                                                <div class="install-button-wrapper">
-                                                    <a href="${FAST_URL}${asset.browser_download_url}" 
-                                                       download="${asset.name}"
-                                                       class="btn btn-secondary${showTimeClass}" data-time="${getRelativeTime(assetTime)}" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); box-shadow: 0 8px 25px -8px rgba(245, 158, 11, 0.5); display: flex; justify-content: center; align-items: center; position: relative; padding-bottom: 14px;">
-                                                        <span style="position: absolute; left: 10px; font-size: 0.8em; opacity: 0.6;">下载</span>
-                                                        <span style="font-weight: 600; margin-left: 8px;">${displayName}</span>
-                                                        <span style="position: absolute; bottom: 2px; right: 5px; font-size: 0.55em; opacity: 0.5;">待签名包</span>
-                                                    </a>
-                                                </div>
-                                            `;
-                                        }).join('')}
-                                    </div>
+                            ${(ipaAssets.length > 0 && !DOWNLOAD_ONLY) || payloadAssets.length > 0 ? `
+                                <div class="install-sections-wrapper">
+                                    ${ipaAssets.length > 0 && !DOWNLOAD_ONLY ? `
+                                        <div class="install-section">
+                                            <div class="install-buttons">
+                                                <h5>📱安装包 （内测版）</h5>
+                                                <p style="position: absolute; top: 6px; right: 30px; font-size: 0.65rem; color: #6b7280; margin: 0; opacity: 0.7; white-space: nowrap;">仅开发者设备可安装测试</p> 
+                                                ${ipaAssets.map(asset => {
+                                                    const buttonHtml = checkurlshowbuttonhtml(asset.name, release.assets, asset, release.published_at);
+                                                    return `
+                                                        <div class="install-button-wrapper">
+                                                            ${buttonHtml}
+                                                        </div>
+                                                    `;
+                                                }).join('')}
+                                            </div>
+                                        </div>
+                                    ` : ''}
+                                    
+                                    ${payloadAssets.length > 0 ? `
+                                        <div class="install-section">
+                                            <div class="install-buttons" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid #f59e0b; box-shadow: 0 4px 20px rgba(245, 158, 11, 0.3);">
+                                                <h5 style="color: #92400e;">📦待签名包</h5>
+                                                <p style="position: absolute; top: 6px; right: 30px; font-size: 0.65rem; color: #92400e; margin: 0; opacity: 0.7; white-space: nowrap;">需重新签名后方可使用</p> 
+                                                ${payloadAssets.map(asset => {
+                                                    const displayName = getPayloadDisplayName(asset.name);
+                                                    const assetTime = asset.updated_at || asset.created_at;
+                                                    const showTimeClass = isAssetOlderThanRelease(assetTime, release.published_at) ? ' show-time' : '';
+                                                    return `
+                                                        <div class="install-button-wrapper">
+                                                            <a href="${FAST_URL}${asset.browser_download_url}" 
+                                                               download="${asset.name}"
+                                                               class="btn btn-secondary${showTimeClass}" data-time="${getRelativeTime(assetTime)}" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); box-shadow: 0 8px 25px -8px rgba(245, 158, 11, 0.5); display: flex; justify-content: center; align-items: center; position: relative; padding-bottom: 14px;">
+                                                                <span style="position: absolute; left: 10px; font-size: 0.8em; opacity: 0.6;">下载</span>
+                                                                <span style="font-weight: 600; margin-left: 8px;">${displayName}</span>
+                                                                <span style="position: absolute; bottom: 2px; right: 5px; font-size: 0.55em; opacity: 0.5;">待签名包</span>
+                                                            </a>
+                                                        </div>
+                                                    `;
+                                                }).join('')}
+                                            </div>
+                                        </div>
+                                    ` : ''}
                                 </div>
                             ` : ''}
                             
@@ -1206,7 +1219,7 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            padding: 8px 16px;
+            padding: 8px 12px;
             margin: 3px;
             border-radius: 8px;
             text-decoration: none;
@@ -1214,7 +1227,7 @@
             transition: all 0.3s ease;
             cursor: pointer;
             border: none;
-            min-width: 85px;
+            min-width: 80px;
             font-size: 0.85rem;
             position: relative;
             overflow: visible;
